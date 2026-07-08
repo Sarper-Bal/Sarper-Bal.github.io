@@ -135,6 +135,1510 @@
 </head>
 <body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900 pb-12">
 
+    <!-- STREAMING_CHUNK: Setting up synthesiser engine... -->
+    <!-- WEB AUDIO API SES MOTORU -->
+    <script>
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            const now = audioCtx.currentTime;
+
+            if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, now);
+                osc.frequency.exponentialRampToValueAtTime(180, now + 0.12);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'success') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.08);
+                osc.frequency.setValueAtTime(783.99, now + 0.16);
+                gain.gain.setValueAtTime(0.12, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.32);
+            } else if (type === 'levelup') {
+                osc.type = 'square';
+                const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, i) => {
+                    osc.frequency.setValueAtTime(freq, now + i * 0.07);
+                });
+                gain.gain.setValueAtTime(0.08, now);
+                gain.gain.exponentialRampToValueAtTime(0.005, now + 0.6);
+                osc.start(now);
+                osc.stop(now + 0.62);
+            } else if (type === 'equip') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+                gain.gain.setValueAtTime(0.04, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('sound-toggle-btn');
+            if (soundEnabled) {
+                btn.innerHTML = '<i data-lucide="volume-2" class="w-5 h-5"></i>';
+                playSound('click');
+            } else {
+                btn.innerHTML = '<i data-lucide="volume-x" class="w-5 h-5"></i>';
+            }
+            lucide.createIcons();
+        }
+    </script>
+
+    <!-- STREAMING_CHUNK: Rendering the main HUD component... -->
+    <!-- OYUN HUD PANELİ -->
+    <header class="fixed top-0 left-0 w-full z-40 bg-white/95 backdrop-blur-md border-b-4 border-blue-900/10 px-4 py-3 shadow-sm">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="relative">
+                    <div id="hud-level-badge" class="w-12 h-12 rounded-full bg-blue-100 border-4 border-blue-800 flex items-center justify-center font-bold text-blue-900 text-lg shadow-sm transition-all duration-300">
+                        LV <span id="hud-level">1</span>
+                    </div>
+                    <span class="absolute -top-1 -right-1 bg-yellow-400 border-2 border-slate-900 text-[9px] p-0.5 rounded-full flex items-center justify-center animate-bounce">⭐</span>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-slate-900 leading-tight">Sarper Bal</h1>
+                    <p class="text-[10px] font-mono text-blue-600 font-semibold uppercase tracking-wider" data-lang-tr="Unity Yazılım Mühendisi" data-lang-en="Unity Software Engineer">Unity Yazılım Mühendisi</p>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-4 justify-center">
+                <div class="flex items-center space-x-1" title="Enerji / Kahve Seviyesi">
+                    <span class="text-xs font-bold text-red-500 font-cozy">HP ❤️</span>
+                    <div class="w-28 h-4 bg-slate-200 border-2 border-slate-800 rounded-full overflow-hidden relative">
+                        <div id="hp-bar-fill" class="h-full bg-red-500 bar-transition" style="width: 100%;"></div>
+                        <span class="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white shadow-sm" id="hp-text">100/100</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1" title="Mana / Kodlama Gücü">
+                    <span class="text-xs font-bold text-cyan-500 font-cozy">MP 🧪</span>
+                    <div class="w-28 h-4 bg-slate-200 border-2 border-slate-800 rounded-full overflow-hidden relative">
+                        <div id="mp-bar-fill" class="h-full bg-cyan-400 bar-transition" style="width: 95%;"></div>
+                        <span class="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-slate-800 shadow-sm" id="mp-text">95/100</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-1" title="Etkileşimle Kazanılan XP!">
+                    <span class="text-xs font-bold text-emerald-500 font-cozy">XP ⭐</span>
+                    <div class="w-36 h-4 bg-slate-200 border-2 border-slate-800 rounded-full overflow-hidden relative">
+                        <div id="xp-bar-fill" class="h-full bg-emerald-400 bar-transition" style="width: 0%;"></div>
+                        <span class="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-slate-800 shadow-sm" id="xp-text">0/100</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-1 bg-slate-100 p-0.5 rounded-xl border border-slate-300">
+                    <button id="lang-btn-tr" onclick="setLanguage('tr')" class="px-2 py-0.5 bg-blue-600 text-white rounded-lg border border-blue-900 shadow-sm text-[10px] font-bold transition-all">TR</button>
+                    <button id="lang-btn-en" onclick="setLanguage('en')" class="px-2 py-0.5 bg-transparent text-slate-700 rounded-lg text-[10px] font-bold transition-all">EN</button>
+                </div>
+
+                <button id="sound-toggle-btn" onclick="toggleSound()" class="p-1.5 rounded-xl border-2 border-slate-800 bg-white hover:bg-slate-50 transition-colors shadow text-slate-700" title="Ses Aç/Kapat">
+                    <i data-lucide="volume-2" class="w-4 h-4"></i>
+                </button>
+                
+                <nav class="flex items-center space-x-1 font-cozy text-xs">
+                    <a href="#about" onclick="playSound('click'); addXP(10)" class="px-2 py-1 text-slate-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" data-lang-tr="Karakter" data-lang-en="Character">Karakter</a>
+                    <a href="#games" onclick="playSound('click'); addXP(10)" class="px-2 py-1 text-slate-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" data-lang-tr="Oyunlarım" data-lang-en="My Games">Oyunlarım</a>
+                    <a href="#dev-journey" onclick="playSound('click'); addXP(10)" class="px-2 py-1 text-slate-700 hover:text-blue-600 rounded-lg bg-yellow-100 hover:bg-yellow-200 transition-all font-bold" data-lang-tr="Dev Log" data-lang-en="Dev Log">Dev Log</a>
+                    <a href="#skills" onclick="playSound('click'); addXP(10)" class="px-2 py-1 text-slate-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" data-lang-tr="Yetenekler" data-lang-en="Skills">Yetenekler</a>
+                    <a href="#inventory" onclick="playSound('click'); addXP(10)" class="px-2 py-1 text-slate-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all" data-lang-tr="Envanter" data-lang-en="Inventory">Envanter</a>
+                    <a href="#save" onclick="playSound('click'); addXP(10)" class="px-2.5 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm">Save</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- ANA İÇERİK ALANI -->
+    <main class="pt-28 max-w-6xl mx-auto px-4 space-y-12">
+
+        <!-- STREAMING_CHUNK: Rendering the character profile page... -->
+        <!-- KAHRAMAN (HERO) - KARAKTER SHEET -->
+        <section id="about" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-4">
+            <div class="lg:col-span-5 flex flex-col items-center">
+                <div class="gui-panel p-5 w-full max-w-sm text-center relative overflow-hidden bg-white">
+                    <div class="absolute top-2 left-2 flex space-x-1">
+                        <span class="w-3 h-3 rounded-full bg-red-400 border-2 border-slate-800"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-400 border-2 border-slate-800"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-400 border-2 border-slate-800"></span>
+                    </div>
+                    <div class="absolute top-2 right-2">
+                        <span class="px-2 py-0.5 text-[8px] font-mono bg-blue-100 text-blue-700 rounded border border-blue-300 font-bold" data-lang-tr="YAZILIM MÜHENDİSİ" data-lang-en="SOFTWARE ENGINEER">YAZILIM MÜHENDİSİ</span>
+                    </div>
+
+                    <div class="w-40 h-40 mx-auto my-5 bg-blue-50 rounded-full border-4 border-blue-900/15 flex items-center justify-center p-2 relative cozy-float">
+                        <svg viewBox="0 0 200 200" class="w-full h-full">
+                            <circle cx="100" cy="100" r="90" fill="#dbeafe" />
+                            <rect x="92" y="125" width="16" height="20" rx="4" fill="#fed7aa" stroke="#1e293b" stroke-width="4" />
+                            <circle cx="100" cy="85" r="50" fill="#475569" />
+                            <circle cx="70" cy="80" r="30" fill="#475569" />
+                            <circle cx="130" cy="80" r="30" fill="#475569" />
+                            <circle cx="50" cy="95" r="14" fill="#fed7aa" stroke="#1e293b" stroke-width="4" />
+                            <circle cx="150" cy="95" r="14" fill="#fed7aa" stroke="#1e293b" stroke-width="4" />
+                            <circle cx="100" cy="95" r="46" fill="#fed7aa" stroke="#1e293b" stroke-width="4" />
+                            <path d="M 60,70 Q 100,55 140,70 Q 100,75 60,70" fill="#475569" stroke="#1e293b" stroke-width="4" />
+                            <rect x="65" y="85" width="28" height="20" rx="6" fill="none" stroke="#2563eb" stroke-width="5" />
+                            <rect x="107" y="85" width="28" height="20" rx="6" fill="none" stroke="#2563eb" stroke-width="5" />
+                            <line x1="93" y1="95" x2="107" y2="95" stroke="#2563eb" stroke-width="5" />
+                            <circle cx="79" cy="95" r="4" fill="#1e293b" />
+                            <circle cx="121" cy="95" r="4" fill="#1e293b" />
+                            <circle cx="68" cy="105" r="6" fill="#f43f5e" opacity="0.4" />
+                            <circle cx="132" cy="105" r="6" fill="#f43f5e" opacity="0.4" />
+                            <path d="M 94,112 Q 100,122 106,112" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
+                            <path d="M 50,90 A 50,50 0 0,1 150,90" fill="none" stroke="#1e293b" stroke-width="6" />
+                            <rect x="42" y="80" width="12" height="24" rx="4" fill="#3b82f6" stroke="#1e293b" stroke-width="4" />
+                            <rect x="146" y="80" width="12" height="24" rx="4" fill="#3b82f6" stroke="#1e293b" stroke-width="4" />
+                            <path d="M 64,138 Q 100,125 136,138 L 146,180 L 54,180 Z" fill="#ea580c" stroke="#1e293b" stroke-width="4" />
+                            <path d="M 85,133 Q 100,143 115,133" fill="none" stroke="#78350f" stroke-width="4" />
+                        </svg>
+                        <span class="absolute bottom-1 right-2 bg-yellow-400 border-2 border-slate-900 rounded-xl p-1 text-xs">🎮</span>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-3 border-2 border-slate-800 text-left space-y-1.5 mt-3 font-cozy text-xs">
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-600" data-lang-tr="⚔️ C# & MOTOR GÜCÜ" data-lang-en="⚔️ C# & ENGINE POWER">⚔️ C# & MOTOR GÜCÜ</span>
+                            <span class="font-bold text-blue-600 font-mono">95/99</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-blue-500 h-full rounded-full" style="width: 95%;"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-600" data-lang-tr="📦 BELLEK OPTİMİZASYONU" data-lang-en="📦 MEMORY OPTIMIZATION">📦 BELLEK OPTİMİZASYONU</span>
+                            <span class="font-bold text-emerald-600 font-mono">90/99</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-emerald-500 h-full rounded-full" style="width: 90%;"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-600" data-lang-tr="🎨 UI/UX UYGULAMA" data-lang-en="🎨 UI/UX IMPLEMENTATION">🎨 UI/UX UYGULAMA</span>
+                            <span class="font-bold text-amber-500 font-mono">88/99</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                            <div class="bg-amber-500 h-full rounded-full" style="width: 88%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 space-y-5">
+                <div class="gui-panel-blue p-6 relative">
+                    <div class="absolute -top-3 -left-3 bg-blue-500 text-white font-cozy text-[10px] px-2.5 py-0.5 rounded-lg border-2 border-blue-900 shadow" data-lang-tr="KAHRAMAN DOSYASI (PROFILE)" data-lang-en="CHARACTER FILE (PROFILE)">
+                        KAHRAMAN DOSYASI (PROFILE)
+                    </div>
+
+                    <h2 class="text-2xl md:text-3xl font-bold text-blue-900 leading-tight">
+                        <span data-lang-tr="Merhaba Seyyah! Ben" data-lang-en="Hello Adventurer! I'm">Merhaba Seyyah! Ben</span> <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500 font-extrabold">Sarper Bal</span>
+                    </h2>
+                    
+                    <p class="text-slate-600 font-medium leading-relaxed text-xs md:text-sm mt-3" data-lang-tr="Google Play ve App Store üzerinde başarılı lansman tecrübelerine sahip, C# ve Unity tabanlı Profesyonel Unity Game Developer & Yazılım Mühendisi'yim. Bahçeşehir Üniversitesi Yazılım Mühendisliği bölümünden mezun olduktan sonra, mobil oyun pazarına yönelik ölçeklenebilir oyun sistemleri, hibrit-casual oynanış döngüleri, uygulama içi satın alma (IAP) mimarileri ve gelişmiş performans optimizasyonları tasarlamaya odaklandım." data-lang-en="I am a Professional Unity Game Developer & Software Engineer specialized in C# and Unity, with a track record of launching successful mobile games on Google Play and the Apple App Store. After graduating from Bahçeşehir University with a B.Sc. in Software Engineering, I dedicated my focus to engineering scalable systems, hybrid-casual mechanics, complex In-App Purchase (IAP) architectures, and advanced mobile hardware rendering optimizations.">
+                        Google Play ve App Store üzerinde başarılı lansman tecrübelerine sahip, C# ve Unity tabanlı **Profesyonel Unity Game Developer & Yazılım Mühendisi**'yim. Bahçeşehir Üniversitesi Yazılım Mühendisliği bölümünden mezun olduktan sonra, mobil oyun pazarına yönelik ölçeklenebilir oyun sistemleri, hibrit-casual oynanış döngüleri, uygulama içi satın alma (IAP) mimarileri ve gelişmiş performans optimizasyonları tasarlamaya odaklandım.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 mt-3 border-t-2 border-blue-100 font-cozy text-[11px] md:text-xs text-slate-700">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-base">🎂</span>
+                            <span data-lang-tr="<strong>Doğum Tarihi:</strong> 13/01/1999" data-lang-en="<strong>Date of Birth:</strong> 13/01/1999"><strong>Doğum Tarihi:</strong> 13/01/1999</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-base">📍</span>
+                            <span data-lang-tr="<strong>Konum:</strong> Beşiktaş / İSTANBUL" data-lang-en="<strong>Location:</strong> Beşiktaş / ISTANBUL"><strong>Konum:</strong> Beşiktaş / İSTANBUL</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-base">✉️</span>
+                            <span><strong>E-Posta:</strong> sarperbal1@gmail.com</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-base">📱</span>
+                            <span data-lang-tr="<strong>Telefon:</strong> (531) 629 8837" data-lang-en="<strong>Phone:</strong> +90 (531) 629 8837"><strong>Telefon:</strong> (531) 629 8837</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t-2 border-blue-100 flex flex-wrap items-center gap-2">
+                        <span class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider" data-lang-tr="Kanallar:" data-lang-en="Channels:">Kanallar:</span>
+                        
+                        <a href="https://apps.apple.com/br/app/tiny-thrones/id6757228822?l=en-GB" target="_blank" onclick="playSound('success'); addXP(15)" class="gui-btn bg-indigo-600 border-indigo-900 px-2.5 py-1 text-[11px] flex items-center space-x-1 hover:bg-indigo-700">
+                            <i data-lucide="apple" class="w-3.5 h-3.5"></i>
+                            <span>App Store</span>
+                        </a>
+
+                        <a href="https://github.com/Sarper-Bal" target="_blank" onclick="playSound('success'); addXP(15)" class="gui-btn bg-slate-900 border-slate-950 px-2.5 py-1 text-[11px] flex items-center space-x-1 hover:bg-slate-800">
+                            <i data-lucide="github" class="w-3.5 h-3.5"></i>
+                            <span>GitHub</span>
+                        </a>
+
+                        <a href="https://sarper-bal.itch.io" target="_blank" onclick="playSound('success'); addXP(15)" class="gui-btn bg-red-500 border-red-700 px-2.5 py-1 text-[11px] flex items-center space-x-1 hover:bg-red-600">
+                            <i data-lucide="gamepad-2" class="w-3.5 h-3.5"></i>
+                            <span>itch.io</span>
+                        </a>
+
+                        <a href="https://www.linkedin.com/in/sarper-bal/" target="_blank" onclick="playSound('success'); addXP(15)" class="gui-btn bg-blue-700 border-blue-900 px-2.5 py-1 text-[11px] flex items-center space-x-1 hover:bg-blue-800">
+                            <i data-lucide="linkedin" class="w-3.5 h-3.5"></i>
+                            <span>LinkedIn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STREAMING_CHUNK: Formatting games showcase panel with bilingual parameters... -->
+        <!-- OYUN KÜTÜPHANESİ PROJE KARTALARI -->
+        <section id="games" class="space-y-4">
+            <div class="text-center">
+                <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-blue-100 text-blue-800 border-2 border-blue-200 rounded-full font-cozy" data-lang-tr="OYUN DESTESİ" data-lang-en="MY GAMES DECK">OYUN DESTESİ</span>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-900 mt-1" data-lang-tr="Yayımlanan Oyunlar & Projeler" data-lang-en="Published Games & Projects">Yayımlanan Oyunlar & Projeler</h3>
+                <p class="text-slate-500 text-xs mt-0.5 max-w-md mx-auto" data-lang-tr="Mobil marketlerde ve itch.io üzerinde yayınladığım, performans odaklı oyunlarım." data-lang-en="Performant, mobile-first titles launched on major application stores and itch.io.">Mobil marketlerde ve itch.io üzerinde yayınladığım, performans odaklı oyunlarım.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 pt-3">
+                <!-- Tiny Thrones -->
+                <div onclick="selectGame('tiny-thrones')" id="game-card-tiny-thrones" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-indigo-900 to-purple-800 flex flex-col items-center justify-center p-3 text-white text-center">
+                        <span class="text-4xl animate-bounce">👑</span>
+                        <h4 class="text-sm font-bold mt-2">Tiny Thrones</h4>
+                        <span class="absolute bottom-2 right-2 bg-black/60 px-1.5 py-0.5 text-[8px] font-mono rounded">App Store Live</span>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <div class="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                            <span>Engine: Unity 3D</span>
+                            <span class="text-blue-600 font-bold">iOS / Mobile</span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium line-clamp-2" data-lang-tr="Infinity Runner ve Arcade Idle mekaniklerinin eşsiz harmanı." data-lang-en="A unique hybrid loop blending high-action runner gameplay with idle base management.">Infinity Runner ve Arcade Idle mekaniklerinin eşsiz harmanı.</p>
+                    </div>
+                </div>
+
+                <!-- MyLand -->
+                <div onclick="selectGame('myland')" id="game-card-myland" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-emerald-800 to-amber-700 flex flex-col items-center justify-center p-3 text-white text-center">
+                        <span class="text-4xl">🌾</span>
+                        <h4 class="text-sm font-bold mt-2">MyLand</h4>
+                        <span class="absolute bottom-2 right-2 bg-black/60 px-1.5 py-0.5 text-[8px] font-mono rounded">itch.io Live</span>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <div class="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                            <span>Engine: Unity 3D</span>
+                            <span class="text-emerald-600 font-bold">Android / PC</span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium line-clamp-2" data-lang-tr="Sanal joystick, fizik ve coroutine tabanlı çiftçilik simülasyonu." data-lang-en="A mobile harvesting arcade game tracking movements via joysticks and active coroutine sequences.">Sanal joystick, fizik ve coroutine tabanlı çiftçilik simülasyonu.</p>
+                    </div>
+                </div>
+
+                <!-- Pocket Kingdom -->
+                <div onclick="selectGame('pocket-kingdom')" id="game-card-pocket-kingdom" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-blue-900 to-cyan-800 flex flex-col items-center justify-center p-3 text-white text-center">
+                        <span class="text-4xl">🏰</span>
+                        <h4 class="text-sm font-bold mt-2">Pocket Kingdom</h4>
+                        <span class="absolute bottom-2 right-2 bg-black/60 px-1.5 py-0.5 text-[8px] font-mono rounded">itch.io Live</span>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <div class="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                            <span>Engine: Unity 2D</span>
+                            <span class="text-cyan-600 font-bold">Idle Simulation</span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium line-clamp-2" data-lang-tr="Otomatik savaş ve tıklama mekaniklerine sahip krallık yönetimi." data-lang-en="A cozy 2D clicker simulation utilizing auto-battle calculation arrays and engagement layers.">Otomatik savaş ve tıklama mekaniklerine sahip krallık yönetimi.</p>
+                    </div>
+                </div>
+
+                <!-- Gamified Learning Platform -->
+                <div onclick="selectGame('gamified-platform')" id="game-card-gamified-platform" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-rose-800 to-purple-800 flex flex-col items-center justify-center p-3 text-white text-center">
+                        <span class="text-4xl">🎓</span>
+                        <h4 class="text-sm font-bold mt-2">BAU Gamified Platform</h4>
+                        <span class="absolute bottom-2 right-2 bg-black/60 px-1.5 py-0.5 text-[8px] font-mono rounded">TÜBİTAK Projesi</span>
+                    </div>
+                    <div class="mt-3 space-y-1">
+                        <div class="flex justify-between items-center text-[10px] font-mono text-slate-500">
+                            <span>Engine: Unity</span>
+                            <span class="text-rose-600 font-bold">Educational</span>
+                        </div>
+                        <p class="text-xs text-slate-600 font-medium line-clamp-2" data-lang-tr="Mantık ve problem çözme becerilerini ölçen oyunlaştırılmış sistem." data-lang-en="An analytical progression system built to evaluate logical algorithmic structures.">Mantık ve problem çözme becerilerini ölçen oyunlaştırılmış sistem.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seçilen Oyun Detay Konsolu -->
+            <div id="game-detail-panel" class="gui-panel-blue p-5 mt-4 relative">
+                <div class="absolute -top-3 right-6 bg-yellow-400 text-slate-900 border-2 border-slate-900 font-cozy text-[10px] px-2 py-0.5 rounded-lg shadow-md flex items-center space-x-1">
+                    <span data-lang-tr="🎬 OYUN MERKEZİ" data-lang-en="🎬 GAME HUB">🎬 OYUN MERKEZİ</span>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-3">
+                        <h4 id="game-title" class="text-lg font-bold text-blue-950 flex items-center space-x-2">
+                            <span data-lang-tr="Detaylı Oyun Analizörü" data-lang-en="Detailed Game Analyzer">Detaylı Oyun Analizörü</span>
+                        </h4>
+                        <p id="game-desc" class="text-slate-600 text-xs md:text-sm font-medium leading-relaxed">Loading variables...</p>
+                        
+                        <div id="game-highlights" class="space-y-2 bg-white/60 p-3 rounded-xl border-2 border-blue-200 hidden">
+                            <h5 class="text-xs font-bold text-blue-900 uppercase tracking-wider" data-lang-tr="// Teknik Başarımlar" data-lang-en="// Technical Accomplishments">// Teknik Başarımlar</h5>
+                            <ul id="game-highlights-list" class="list-disc pl-4 text-xs text-slate-600 space-y-1 font-medium"></ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-100/50 p-4 rounded-2xl border-2 border-blue-200 flex flex-col justify-between">
+                        <div class="space-y-2 text-xs">
+                            <div class="flex justify-between border-b border-blue-200 pb-1">
+                                <span class="text-slate-500 font-semibold" data-lang-tr="Geliştirici:" data-lang-en="Developer:">Geliştirici:</span>
+                                <span class="font-bold text-slate-800">Sarper Bal</span>
+                            </div>
+                            <div class="flex justify-between border-b border-blue-200 pb-1">
+                                <span class="text-slate-500 font-semibold" data-lang-tr="Kategori:" data-lang-en="Category:">Kategori:</span>
+                                <span id="game-meta-genre" class="font-bold text-slate-800">-</span>
+                            </div>
+                            <div class="flex justify-between border-b border-blue-200 pb-1">
+                                <span class="text-slate-500 font-semibold" data-lang-tr="Dil & Motor:" data-lang-en="Engine & Language:">Dil & Motor:</span>
+                                <span id="game-meta-lang" class="font-bold text-slate-800">-</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-2">
+                            <a id="game-play-btn" href="#" target="_blank" class="gui-btn-gold px-4 py-2 text-xs font-bold w-full text-center block uppercase tracking-wider" data-lang-tr="Hemen Oyna / İndir 🚀" data-lang-en="Play / Download Now 🚀">
+                                Hemen Oyna / İndir 🚀
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STREAMING_CHUNK: Integrating the interactive Dev Journey section with photos and smart case-insensitive fallback helper... -->
+        <!-- ODAK PROJE: TINY THRONES GELİŞTİRME YOLCULUĞU (Tersine Kronolojik Düzen, Pixel Flow ve Mesh Merging) -->
+        <section id="dev-journey" class="space-y-4">
+            <div class="text-center">
+                <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-yellow-100 text-amber-800 border-2 border-amber-200 rounded-full font-cozy" data-lang-tr="YOL HARİTASI & PROTOTİPLER" data-lang-en="ROADMAP & PROTOTYPES">YOL HARİTASI & PROTOTİPLER</span>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-900 mt-1" data-lang-tr="Tiny Thrones Gelişim Günlüğü" data-lang-en="Tiny Thrones Dev Diary Log">Tiny Thrones Gelişim Günlüğü</h3>
+                <p class="text-slate-500 text-xs mt-0.5 max-w-lg mx-auto" data-lang-tr="Tasarım sürecinin en başından, App Store'da yayınlanan son sürümüne kadar projenin gerçek teknik evrimi." data-lang-en="Architectural software engineering path mapping the production cycle from initial prototypes to full Apple deployment.">Tasarım sürecinin en başından, App Store'da yayınlanan son sürümüne kadar projenin gerçek teknik evrimi.</p>
+            </div>
+
+            <!-- İnteraktif Günlük Gövdesi -->
+            <div class="gui-panel p-6 bg-white border-blue-900">
+                <!-- Üst Adımlar Menüsü (6'dan 1'e doğru tersine kronolojik sıralama) -->
+                <div class="grid grid-cols-3 md:grid-cols-6 gap-1.5 md:gap-2 border-b-4 border-blue-900/10 pb-4">
+                    <button onclick="selectDevStep(6)" id="dev-step-tab-6" class="gui-btn-gold text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="⭐ 6. Açık Dünya" data-lang-en="⭐ 6. Open World">⭐ 6. Açık Dünya</button>
+                    <button onclick="selectDevStep(5)" id="dev-step-tab-5" class="gui-btn text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="5. IAP & Mağaza" data-lang-en="5. IAP & Store">5. IAP & Mağaza</button>
+                    <button onclick="selectDevStep(4)" id="dev-step-tab-4" class="gui-btn text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="4. Zindan & Savaş" data-lang-en="4. Dungeon Arena">4. Zindan & Savaş</button>
+                    <button onclick="selectDevStep(3)" id="dev-step-tab-3" class="gui-btn text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="3. Pixel Flow Grid" data-lang-en="3. Pixel Flow Grid">3. Pixel Flow Grid</button>
+                    <button onclick="selectDevStep(2)" id="dev-step-tab-2" class="gui-btn text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="2. Köy & İnşa" data-lang-en="2. Village Build">2. Köy & İnşa</button>
+                    <button onclick="selectDevStep(1)" id="dev-step-tab-1" class="gui-btn text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="1. Koşu & Fizik" data-lang-en="1. Run & Physics">1. Koşu & Fizik</button>
+                </div>
+
+                <!-- Detay Alanı -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 items-center">
+                    <div class="lg:col-span-5 space-y-4">
+                        <div>
+                            <span id="dev-step-badge" class="text-[9px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md">PHASE 06</span>
+                            <h4 id="dev-step-title" class="text-lg font-bold text-blue-950 mt-1.5">Loading Title...</h4>
+                        </div>
+                        <p id="dev-step-desc" class="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">Loading data stream...</p>
+                        
+                        <div class="bg-blue-50/50 p-4 rounded-2xl border-2 border-blue-200 space-y-2">
+                            <span class="text-[10px] font-mono font-bold text-blue-800 uppercase tracking-wider block" data-lang-tr="// Teknik Çözümler (Tech Focus):" data-lang-en="// Technical Solutions (Tech Focus):">// Teknik Çözümler (Tech Focus):</span>
+                            <ul id="dev-step-bullets" class="list-inside list-disc text-xs text-slate-600 font-medium space-y-1"></ul>
+                        </div>
+                    </div>
+
+                    <!-- Sağ Taraf: Medyalar (file:// Protokolünde Kırılmayı Önleyen Güvenli Fallback Yapısı) -->
+                    <div class="lg:col-span-7 flex flex-col justify-center items-center w-full">
+                        <div id="dev-step-images" class="flex flex-row overflow-x-auto gap-4 p-2 w-full max-w-full justify-start items-center snap-x scroll-smooth pb-4">
+                            <!-- JS Tarafından Dinamik Olarak Doldurulur -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STREAMING_CHUNK: Formatting skills tree, active quests, and inventory Backpack... -->
+        <!-- YETENEK AĞACI BÖLÜMÜ -->
+        <section id="skills" class="space-y-4">
+            <div class="text-center">
+                <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-yellow-100 text-amber-800 border-2 border-amber-200 rounded-full font-cozy" data-lang-tr="GELİŞTİRİCİ YETENEK AĞACI" data-lang-en="DEVELOPER TALENT TREE">GELİŞTİRİCİ YETENEK AĞACI</span>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-900 mt-1" data-lang-tr="Yetenek Ağacı & Altyapılar" data-lang-en="Talent Tree & Infrastructure">Yetenek Ağacı & Altyapılar</h3>
+                <p class="text-slate-500 text-xs mt-0.5 max-w-md mx-auto" data-lang-tr="Sınıflara göre ayrılmış oyun tasarımı ve yazılım mimarisi yeteneklerim." data-lang-en="Categorized clean coding paradigms and mobile engineering parameters.">Sınıflara göre ayrılmış oyun tasarımı ve yazılım mimarisi yeteneklerim.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3">
+                <div onclick="selectSkill('unity')" id="skill-card-unity" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="w-12 h-12 mx-auto bg-blue-100 border-2 border-blue-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">👾</div>
+                    <h4 class="text-sm font-bold text-slate-900">Unity & C# Core</h4>
+                    <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="Physics & Collision, Coroutines, NavMesh, Input System, Event-driven mimari." data-lang-en="Physics & Collisions, Coroutines, NavMesh spatial logic, New Input System scripts.">Physics & Collision, Coroutines, NavMesh, Input System, Event-driven mimari.</p>
+                    <div class="mt-3 bg-slate-100 rounded-lg py-1 font-mono text-[9px] font-bold text-slate-600">Level: MAX</div>
+                </div>
+
+                <div onclick="selectSkill('architecture')" id="skill-card-architecture" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="w-12 h-12 mx-auto bg-amber-100 border-2 border-amber-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">📐</div>
+                    <h4 class="text-sm font-bold text-slate-900" data-lang-tr="Mimari Tasarım" data-lang-en="Architecture Matrix">Mimari Tasarım</h4>
+                    <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="SOLID, Scriptable Objects (data-driven), Singleton, Observer, Factory, FSM." data-lang-en="SOLID clean patterns, ScriptableObjects, Observer events, FSM design layers.">SOLID, Scriptable Objects (data-driven), Singleton, Observer, Factory, FSM.</p>
+                    <div class="mt-3 bg-slate-100 rounded-lg py-1 font-mono text-[9px] font-bold text-slate-600">
+                        <span data-lang-tr="Level: Uzman (92)" data-lang-en="Level: Expert (92)">Level: Uzman (92)</span>
+                    </div>
+                </div>
+
+                <div onclick="selectSkill('mobile')" id="skill-card-mobile" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="w-12 h-12 mx-auto bg-emerald-100 border-2 border-emerald-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">⚡</div>
+                    <h4 class="text-sm font-bold text-slate-900" data-lang-tr="Mobil Optimizasyon" data-lang-en="Mobile Optimization">Mobil Optimizasyon</h4>
+                    <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="Object Pooling, Garbage Collection (GC) azaltma, Screen Safe Area, Profiling." data-lang-en="Object Pools, GC reduction metrics, Screen Safe Area calculations, memory profiling.">Object Pooling, Garbage Collection (GC) azaltma, Screen Safe Area, Profiling.</p>
+                    <div class="mt-3 bg-slate-100 rounded-lg py-1 font-mono text-[9px] font-bold text-slate-600">
+                        <span data-lang-tr="Level: Kıdemli (90)" data-lang-en="Level: Senior (90)">Level: Kıdemli (90)</span>
+                    </div>
+                </div>
+
+                <div onclick="selectSkill('monetization')" id="skill-card-monetization" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
+                    <div class="w-12 h-12 mx-auto bg-purple-100 border-2 border-purple-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">💰</div>
+                    <h4 class="text-sm font-bold text-slate-900">Monetization & Cloud</h4>
+                    <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="Unity Ads, Unity IAP, AdMob, Google Cloud, Firebase (DB & Authentication)." data-lang-en="Unity IAP storefront loops, AdMob mediation, Firebase auth systems, remote databases.">Unity Ads, Unity IAP, AdMob, Google Cloud, Firebase (DB & Authentication).</p>
+                    <div class="mt-3 bg-slate-100 rounded-lg py-1 font-mono text-[9px] font-bold text-slate-600">
+                        <span data-lang-tr="Level: Uzman (85)" data-lang-en="Level: Expert (85)">Level: Uzman (85)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="skill-detail-panel" class="gui-panel-blue p-5 mt-3 relative">
+                <div class="absolute -top-3 right-6 bg-emerald-400 text-slate-900 border-2 border-slate-900 font-cozy text-[10px] px-2 py-0.5 rounded-lg shadow-md flex items-center space-x-1">
+                    <span data-lang-tr="💡 SİHİR KİTABI" data-lang-en="💡 SPELLBOOK">💡 SİHİR KİTABI</span>
+                </div>
+                <h4 id="skill-title" class="text-sm md:text-base font-bold text-blue-900 flex items-center space-x-2"><span>Yetenek Detay Kitabı</span></h4>
+                <p id="skill-desc" class="text-slate-600 text-xs md:text-sm mt-2 font-medium leading-relaxed">Select talent matrix asset...</p>
+                <div id="skill-chips" class="flex flex-wrap gap-1.5 mt-3"></div>
+            </div>
+        </section>
+
+        <!-- GÖREV GÜNLÜĞÜ VE ENVANTER (Tarih 2018-2023 Yapıldı, Cite Hataları Arındırıldı) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
+            <!-- Sol: Görev Günlüğü -->
+            <section id="quests" class="lg:col-span-7 space-y-4">
+                <div>
+                    <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-rose-100 text-rose-800 border-2 border-rose-200 rounded-full font-cozy" data-lang-tr="AKTİF GÖREVLER" data-lang-en="ACTIVE QUESTS">AKTİF GÖREVLER</span>
+                    <h3 class="text-xl font-bold text-slate-900 mt-1" data-lang-tr="Eğitim ve Özel Görevler" data-lang-en="Education & Academic Achievements">Eğitim ve Özel Görevler</h3>
+                </div>
+
+                <div class="space-y-4 pt-2">
+                    <div onclick="toggleQuest('quest-edu')" class="gui-panel p-4 bg-white cursor-pointer hover:border-blue-600 transition-colors relative overflow-hidden group">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-50 border-2 border-blue-700 flex items-center justify-center text-xl shadow-sm">📜</div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors" data-lang-tr="Bahçeşehir Üniversitesi Lisansı" data-lang-en="Bahçeşehir University Graduation">Bahçeşehir Üniversitesi Lisansı</h4>
+                                    <p class="text-[9px] font-mono text-slate-400 font-bold mt-0.5">B.SC. IN SOFTWARE ENGINEERING | 2018 - 2023</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 self-end sm:self-auto">
+                                <span class="px-2 py-0.5 text-[8px] font-mono font-bold bg-green-100 border border-green-300 text-green-700 rounded-full" data-lang-tr="TAMAMLANDI" data-lang-en="COMPLETED">TAMAMLANDI</span>
+                                <i data-lucide="chevron-down" id="quest-edu-icon" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                            </div>
+                        </div>
+                        <div id="quest-edu-detail" class="hidden mt-4 pt-4 border-t-2 border-slate-100 text-xs text-slate-600 space-y-2 font-medium">
+                            <p data-lang-tr="Bahçeşehir Üniversitesi Yazılım Mühendisliği bölümünde nesne yönelimli programlama, algoritma analizleri, veri yapıları, bulut bilişim ve mobil sistemler üzerine odaklandım." data-lang-en="Extensively studied complex algorithm constraints, advanced OOP data structures, virtualization stacks, and automated gameplay patterns within the Software Engineering B.Sc. program.">Bahçeşehir Üniversitesi Yazılım Mühendisliği bölümünde nesne yönelimli programlama, algoritma analizleri, veri yapıları, bulut bilişim ve mobil sistemler üzerine odaklandım.</p>
+                            <p class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                🌟 <strong data-lang-tr="BAU AI Society ve TÜBİTAK Eğitim Oyunlaştırma Projelerinde aktif rol alarak oyun dinamiklerini ve yapay zeka entegrasyonlarını tecrübe ettim." data-lang-en="Pioneered dynamic telemetry tracking nodes inside the BAU Artificial Intelligence Society and educational gamification research groups.">BAU AI Society ve TÜBİTAK Eğitim Oyunlaştırma Projelerinde aktif rol alarak oyun dinamiklerini ve yapay zeka entegrasyonlarını tecrübe ettim.</strong>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div onclick="toggleQuest('quest-tubitak')" class="gui-panel p-4 bg-white cursor-pointer hover:border-blue-600 transition-colors relative overflow-hidden group">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-10 h-10 rounded-xl bg-amber-50 border-2 border-amber-700 flex items-center justify-center text-xl shadow-sm">🔬</div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors" data-lang-tr="TÜBİTAK Eğitim Oyunlaştırma Görevi" data-lang-en="TÜBİTAK Educational Gamification Quest">TÜBİTAK Eğitim Oyunlaştırma Görevi</h4>
+                                    <p class="text-[9px] font-mono text-slate-400 font-bold mt-0.5">GAME DEVELOPMENT RESEARCHER</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2 self-end sm:self-auto">
+                                <span class="px-2 py-0.5 text-[8px] font-mono font-bold bg-green-100 border border-green-300 text-green-700 rounded-full" data-lang-tr="TAMAMLANDI" data-lang-en="COMPLETED">TAMAMLANDI</span>
+                                <i data-lucide="chevron-down" id="quest-tubitak-icon" class="w-4 h-4 text-slate-400 transition-transform"></i>
+                            </div>
+                        </div>
+                        <div id="quest-tubitak-detail" class="hidden mt-4 pt-4 border-t-2 border-slate-100 text-xs text-slate-600 space-y-2 font-medium">
+                            <p data-lang-tr="Öğrencilerin problem çözme, mantıksal akıl yürütme ve hafıza geliştirme becerilerini ölçen ve iyileştiren Unity tabanlı bir eğitsel oyunlaştırma platformunun geliştirilmesini bizzat üstlendim." data-lang-en="Architected a scalable analytics suite evaluating user spatial memory, problem-solving efficiency, and deduction speeds on top of Unity 2D frameworks.">Öğrencilerin problem çözme, mantıksal akıl yürütme ve hafıza geliştirme becerilerini ölçen ve iyileştiren Unity tabanlı bir eğitsel oyunlaştırma platformunun geliştirilmesini bizzat üstlendim.</p>
+                            <p class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                                📊 <strong data-lang-tr="Kazanımlar: İlerleme takibi (progression tracking), dinamik zorluk ve başarım sistemleri kurgulayarak kullanıcı geri bildirim analizleriyle sistemi optimize ettim." data-lang-en="Milestones: Implemented automated progression architectures, dynamic score balance calculators, and custom achievement data adapters.">Kazanımlar: İlerleme takibi (progression tracking), dinamik zorluk ve başarım sistemleri kurgulayarak kullanıcı geri bildirim analizleriyle sistemi optimize ettim.</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sağ: Envanter Sırt Çantası -->
+            <section id="inventory" class="lg:col-span-5 space-y-4">
+                <div>
+                    <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-purple-100 text-purple-800 border-2 border-purple-200 rounded-full font-cozy" data-lang-tr="SIRT ÇANTASI" data-lang-en="BACKPACK ITEMS">SIRT ÇANTASI</span>
+                    <h3 class="text-xl font-bold text-slate-900 mt-1" data-lang-tr="Envanter (Yabancı Dil & Araçlar)" data-lang-en="Backpack Inventory Loot">Envanter (Yabancı Dil & Araçlar)</h3>
+                </div>
+
+                <div class="gui-panel p-4 bg-slate-50 border-slate-800 space-y-3">
+                    <div class="grid grid-cols-4 gap-2">
+                        <div onclick="selectItem('lang-en')" id="item-lang-en" class="aspect-square bg-white border-4 border-blue-600 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm">
+                            <span class="text-2xl">🇬🇧</span>
+                            <span class="text-[8px] font-bold text-slate-500 mt-1 uppercase text-center leading-tight" data-lang-tr="İngilizce" data-lang-en="English">İngilizce</span>
+                        </div>
+                        <div onclick="selectItem('lang-fr')" id="item-lang-fr" class="aspect-square bg-white border-2 border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm">
+                            <span class="text-2xl">🇫🇷</span>
+                            <span class="text-[8px] font-bold text-slate-400 mt-1 uppercase text-center leading-tight" data-lang-tr="Fransızca" data-lang-en="French">Fransızca</span>
+                        </div>
+                        <div onclick="selectItem('tool-git')" id="item-tool-git" class="aspect-square bg-white border-2 border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm">
+                            <span class="text-2xl">🔑</span>
+                            <span class="text-[8px] font-bold text-slate-400 mt-1 uppercase text-center leading-tight">Git / Hub</span>
+                        </div>
+                        <div onclick="selectItem('tool-store')" id="item-tool-store" class="aspect-square bg-white border-2 border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm">
+                            <span class="text-2xl">🏆</span>
+                            <span class="text-[8px] font-bold text-slate-400 mt-1 uppercase text-center leading-tight">App Store</span>
+                        </div>
+                    </div>
+
+                    <div class="gui-panel-parchment p-3.5 relative min-h-[140px] flex flex-col justify-between">
+                        <div>
+                            <span id="inventory-item-type" class="text-[9px] font-mono font-bold text-amber-800 uppercase tracking-widest">SİLAH SEVİYESİ</span>
+                            <h4 id="inventory-item-title" class="text-sm font-bold text-amber-950 mt-0.5">İngilizce Dil Muskası</h4>
+                            <p id="inventory-item-desc" class="text-amber-900 text-xs mt-1.5 font-medium leading-relaxed">Loading bag stats...</p>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-amber-900/10 flex items-center justify-between text-[10px] text-amber-800 font-mono font-bold">
+                            <span id="inventory-requirement" data-lang-tr="Gereksinim: Yok" data-lang-en="Req: None">Gereksinim: Yok</span>
+                            <span id="inventory-rarity" data-lang-tr="Eşsiz ★★★★★" data-lang-en="Legendary ★★★★★">Eşsiz ★★★★★</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- STREAMING_CHUNK: Structuring the save station contact forms... -->
+        <!-- SAVE STATION (İLETİŞİM FORMU) -->
+        <section id="save" class="space-y-4">
+            <div class="text-center">
+                <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-emerald-100 text-emerald-800 border-2 border-emerald-200 rounded-full font-cozy" data-lang-tr="KAYIT NOKTASI" data-lang-en="SAVE STATION">KAYIT NOKTASI</span>
+                <h3 class="text-xl md:text-2xl font-bold text-slate-900 mt-1" data-lang-tr="Kayıt Noktası (Bana Ulaş)" data-lang-en="Save Station (Contact Me)">Kayıt Noktası (Bana Ulaş)</h3>
+                <p class="text-slate-500 text-xs mt-0.5" data-lang-tr="Sarper ile yeni oyun projeleri veya iş teklifleri için iletişime geç, yerel kütüğe kaydol!" data-lang-en="Commit network signals to connect with Sarper Bal for game studios, publisher links, or full-time roles!">Sarper ile yeni oyun projeleri veya iş teklifleri için iletişime geç, yerel kütüğe kaydol!</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pt-2">
+                <div class="lg:col-span-7">
+                    <div class="gui-panel p-5 bg-white border-slate-800">
+                        <h4 class="text-sm font-bold text-slate-950 flex items-center space-x-2 mb-3">
+                            <span data-lang-tr="✉️ Verilerini Kaydet & Mesaj Gönder" data-lang-en="✉️ Save Profile & Send Broadcast">✉️ Verilerini Kaydet & Mesaj Gönder</span>
+                        </h4>
+
+                        <form id="save-form" onsubmit="handleSaveSubmit(event)" class="space-y-3 font-cozy text-xs">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-600 block" data-lang-tr="ADINIZ / OYUNCU ADI:" data-lang-en="PLAYER ALIAS NAME:">ADINIZ / OYUNCU ADI:</label>
+                                    <input type="text" id="form-name" required class="w-full px-3 py-2 rounded-xl border-2 border-slate-800 focus:border-blue-500 focus:outline-none transition-colors" placeholder="Gamer_One">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-600 block" data-lang-tr="E-POSTA ADRESİNİZ:" data-lang-en="PLAYER EMAIL:">E-POSTA ADRESİNİZ:</label>
+                                    <input type="email" id="form-email" required class="w-full px-3 py-2 rounded-xl border-2 border-slate-800 focus:border-blue-500 focus:outline-none transition-colors" placeholder="sarper@game.com">
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-600 block" data-lang-tr="İLETİNİZ / GÖREV TANIMI:" data-lang-en="QUEST OBJECTIVE MESSAGE:">İLETİNİZ / GÖREV TANIMI:</label>
+                                <textarea id="form-message" rows="3" required class="w-full px-3 py-2 rounded-xl border-2 border-slate-800 focus:border-blue-500 focus:outline-none transition-colors resize-none" data-lang-placeholder-tr="Oyun geliştirme süreçleri, iş teklifleri veya işbirlikleri hakkında mesajınız..." data-lang-placeholder-en="Write your studio offers, architecture consulting requests, or performance optimization briefs here..." placeholder="Oyun geliştirme süreçleri, iş teklifleri veya işbirlikleri hakkında mesajınız..."></textarea>
+                            </div>
+                            
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <button type="submit" class="gui-btn-green px-4 py-2.5 font-bold flex-1 uppercase tracking-wider flex items-center justify-center space-x-2">
+                                    <span data-lang-tr="💾 OYUNU KAYDET (+25 XP)" data-lang-en="💾 SAVE PROFILE (+25 XP)">💾 OYUNU KAYDET (+25 XP)</span>
+                                </button>
+                                <button type="button" onclick="sendDirectMail()" class="gui-btn-gold px-4 py-2.5 font-bold flex-1 uppercase tracking-wider flex items-center justify-center space-x-2">
+                                    <span data-lang-tr="✉️ GERÇEK MAİL GÖNDER" data-lang-en="✉️ BROADCAST DIRECT MAIL">✉️ GERÇEK MAİL GÖNDER</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-5 space-y-4">
+                    <div class="gui-panel-blue p-4 text-slate-700 space-y-2">
+                        <h4 class="text-[10px] font-mono font-bold text-blue-800 uppercase tracking-widest" data-lang-tr="// Kayıt Protokolü" data-lang-en="// Telemetry Stacks">// Kayıt Protokolü</h4>
+                        <p class="text-xs font-medium leading-relaxed" data-lang-tr="Formu doldurarak kayıt noktasına ulaştığında veriler yerel bellek kütüğüne (local storage) işlenir. Sarper Bal'a sinyal gönderilir ve alttaki debug konsoluna loglanır!" data-lang-en="Submitting maps key registers inside browser local storage registers. Broadcasts a live signal directly to Sarper Bal and outputs stack lines inside the developer debugging sandbox below.">
+                            Formu doldurarak kayıt noktasına ulaştığında veriler yerel bellek kütüğüne (local storage) işlenir. Sarper Bal'a sinyal gönderilir ve alttaki debug konsoluna loglanır!
+                        </p>
+                        <div class="p-2 bg-blue-100 rounded-lg border border-blue-200 text-[10px] font-mono font-bold text-blue-900" data-lang-tr="📢 Her başarılı kayıt +25 XP kazandırır!" data-lang-en="📢 Each valid registration allocates +25 XP data!">
+                            📢 Her başarılı kayıt +25 XP kazandırır!
+                        </div>
+                    </div>
+
+                    <div class="gui-panel p-4 bg-slate-900 border-slate-950 text-slate-300 relative">
+                        <div class="flex items-center justify-between mb-2.5 border-b border-slate-800 pb-1.5">
+                            <span class="text-[9px] font-mono text-slate-400 font-bold" data-lang-tr="🛠️ LOKAL HATA AYIKLAMA KONSOLU" data-lang-en="🛠️ LOCAL DEBUG LOG STREAM">🛠️ LOKAL HATA AYIKLAMA KONSOLU</span>
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        </div>
+                        <div id="save-ledger-list" class="space-y-2 max-h-[110px] overflow-y-auto text-[10px] font-mono"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER ALANI (Temiz, Yalın, İstenmeyen Loglardan Arındırılmış) -->
+    <footer class="border-t-4 border-blue-900/10 py-6 bg-white mt-12">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 font-cozy text-xs">
+            <span class="flex items-center space-x-1">
+                <span>© 2026</span>
+                <span class="text-blue-600 font-bold">Sarper Bal</span>
+                <span data-lang-tr="• Tüm Hakları Saklıdır." data-lang-en="• All Rights Reserved.">• Tüm Hakları Saklıdır.</span>
+            </span>
+        </div>
+    </footer>
+
+    <!-- STREAMING_CHUNK: Initializing translation data arrays and responsive interactive code mechanisms... -->
+    <!-- JAVASCRIPT ETKİLEŞİM, ÇEVİRİ VE AKILLI MEDYA YAKALAMA SİSTEMİ -->
+    <script>
+        let globalXP = 0;       
+        let currentLevel = 1;   
+
+        function addXP(amount) {
+            globalXP += amount;
+            if (globalXP >= 100) {
+                globalXP = globalXP - 100;
+                levelUp();
+            }
+            updateHUD();
+        }
+
+        function levelUp() {
+            currentLevel++;
+            playSound('levelup');
+            
+            const levelBadge = document.getElementById('hud-level-badge');
+            levelBadge.classList.add('animate-lvl-shake');
+            setTimeout(() => {
+                levelBadge.classList.remove('animate-lvl-shake');
+            }, 600);
+
+            const titleMsg = currentLang === 'tr' ? 'SEVİYE ATLADIN!' : 'LEVEL UP!';
+            const descMsg = currentLang === 'tr' ? `Tebrikler! Sarper'ın dünyasındaki seviyen ${currentLevel} oldu!` : `Excellent work! Your engineer index upgraded to Level ${currentLevel}!`;
+            showToast('🎉', titleMsg, descMsg);
+
+            document.getElementById('hp-bar-fill').style.width = '100%';
+            document.getElementById('hp-text').innerText = '100/100';
+            document.getElementById('mp-bar-fill').style.width = '100%';
+            document.getElementById('mp-text').innerText = '100/100';
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-level').innerText = currentLevel;
+            document.getElementById('xp-bar-fill').style.width = `${globalXP}%`;
+            document.getElementById('xp-text').innerText = `${globalXP}/100`;
+        }
+
+        function showToast(icon, title, desc) {
+            const toast = document.getElementById('toast-notification');
+            document.getElementById('toast-icon').innerText = icon;
+            document.getElementById('toast-title').innerText = title;
+            document.getElementById('toast-desc').innerText = desc;
+            
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 4000);
+        }
+
+        const gamesData = {
+            'tiny-thrones': {
+                tr: {
+                    title: "Tiny Thrones",
+                    desc: "Infinity Runner mekaniklerini, Arcade Idle tabanlı stratejik bir kasaba kurma döngüsüyle birleştiren hibrit-casual mobil oyun. Unity 3D ve Universal Render Pipeline (URP) kullanılarak geliştirildi.",
+                    genre: "Hibrit Casual / Tycoon",
+                    lang: "C# / Unity 3D",
+                    highlights: [
+                        "Object Pooling ve verimli RAM yönetimi ile yüksek mobil optimizasyon sağlandı[cite: 2].",
+                        "Scriptable Objects tabanlı esnek mimariyle yeni bölümler ve içerikler dakikalar içinde eklendi[cite: 2].",
+                        "App Store Connect ve TestFlight üzerinden tam lansman süreci başarıyla yönetildi[cite: 2].",
+                        "Pürüzsüz dokunmatik kontroller (Unity New Input System) ve gelişmiş UI tasarımları entegre edildi[cite: 2]."
+                    ]
+                },
+                en: {
+                    title: "Tiny Thrones",
+                    desc: "A premium mobile Hybrid Casual game seamlessly merging fast-paced Infinity Runner mechanics with strategic Arcade Idle village progression systems, powered by Unity 3D and Universal Render Pipeline (URP)[cite: 2].",
+                    genre: "Hybrid Casual / Tycoon",
+                    lang: "C# / Unity 3D",
+                    highlights: [
+                        "Optimized runtime memory layout by implementing decoupled Object Pooling frameworks to eliminate GC allocation spikes[cite: 2].",
+                        "Engineered highly-scalable, data-driven system loops leveraging custom Scriptable Objects architectures[cite: 2].",
+                        "Spearheaded full App Store launch life-cycles, validating builds, managing TestFlight, and ensuring storefront compliance[cite: 2].",
+                        "Implemented frictionless multi-touch controls utilizing Unity's New Input System package[cite: 2]."
+                    ]
+                }
+            },
+            'myland': {
+                tr: {
+                    title: "MyLand",
+                    desc: "Sanal joystick yardımıyla özgürce hareket edilebilen, yer çekimi fizikleri ve dinamik kamera takibi içeren mobil hibrit-casual çiftçilik oyunu.",
+                    genre: "Çiftçilik Simülasyonu",
+                    lang: "C# / Unity 3D",
+                    highlights: [
+                        "Virtual Joystick kontrolleri ve hassas yer çekimi fizikleri ayarlandı[cite: 2].",
+                        "Coroutine metotları kullanılarak zaman ayarlı eylemler ve performans dostu döngüler tasarlandı[cite: 2].",
+                        "Instantiate metodu ile dinamik ve verimli nesne üretimi kurgulandı[cite: 2]."
+                    ]
+                },
+                en: {
+                    title: "MyLand",
+                    desc: "A polished mobile hybrid-casual harvesting layout bringing forward intuitive gameplay combined with rigid 3D physics rulesets[cite: 2].",
+                    genre: "Farming Simulation",
+                    lang: "C# / Unity 3D",
+                    highlights: [
+                        "Managed player physics transforms utilizing smart virtual joystick vectors and Cinemachine tracking cameras[cite: 2].",
+                        "Scheduled recurring timed simulation triggers asynchronously with performance-friendly Coroutine parameters[cite: 2].",
+                        "Processed highly-performant spatial instantiation structures to regulate background item allocation loops[cite: 2]."
+                    ]
+                }
+            },
+            'pocket-kingdom': {
+                tr: {
+                    title: "Pocket Kingdom: Idle Clicker",
+                    desc: "Otomatik savaş sistemleri, klikleme mekanikleri ve mini-oyunları entegre eden 2D krallık kurma ve kaynak yönetimi oyunu.",
+                    genre: "Idle / Otomatik Savaş",
+                    lang: "C# / Unity 2D",
+                    highlights: [
+                        "Ziyaretçi tutundurma oranını artırıcı mini-oyun entegrasyonu yapıldı[cite: 2].",
+                        "Arayüz ergonomisine (UI/UX) dikkat edilerek dengelenmiş ekonomi modeli uygulandı[cite: 2].",
+                        "Zorluk dengesi ve sürekli ölçeklenebilir içerik altyapısı kuruldu[cite: 2]."
+                    ]
+                },
+                en: {
+                    title: "Pocket Kingdom: Idle Clicker",
+                    desc: "An incremental 2D kingdom tycoon framework incorporating automated multi-thread battle calculations and strategic management features[cite: 2].",
+                    genre: "Idle / Auto-battle",
+                    lang: "C# / Unity 2D",
+                    highlights: [
+                        "Designed retention-oriented puzzle mini-games to expand user session metrics and increase lifetime engagement values[cite: 2].",
+                        "Maintained optimal balance tuning by mapping out balanced currency sinks and clean UI/UX flows[cite: 2].",
+                        "Assembled structured decoupled event handlers for infinite horizontal layer scaling[cite: 2]."
+                    ]
+                }
+            },
+            'gamified-platform': {
+                tr: {
+                    title: "Gamified Learning Platform (Unity)",
+                    desc: "Öğrencilerin problem çözme, mantıksal akıl yürütme ve hafıza yeteneklerini analiz eden, test eden eğitsel oyunlaştırma projesi.",
+                    genre: "Eğitsel Oyunlaştırma",
+                    lang: "C# / Unity",
+                    highlights: [
+                        "İlerleme takibi (progression tracking) ve dinamik başarım sistemleri entegre edildi[cite: 2].",
+                        "Kullanıcı testleri ve veri analizleri doğrultusunda oyun deneyimi maksimize edildi[cite: 2].",
+                        "TÜBİTAK Eğitsel Oyunlaştırma Araştırması bünyesinde geliştirildi[cite: 2]."
+                    ]
+                },
+                en: {
+                    title: "Gamified Learning Platform (Unity)",
+                    desc: "An analytical game application developed to test, isolate, and train logical reasoning capabilities among targeted learning groups[cite: 2].",
+                    genre: "Gamified Educational",
+                    lang: "C# / Unity",
+                    highlights: [
+                        "Configured asynchronous telemetry handlers alongside robust state machines to follow student progress curves[cite: 2].",
+                        "Refined structural visibility loops following direct interaction studies and profile analysis tests[cite: 2].",
+                        "Engineered under the rigorous guidance of TÜBİTAK academic gamification research frameworks[cite: 2]."
+                    ]
+                }
+            }
+        };
+
+        let activeGameKey = 'tiny-thrones';
+
+        function selectGame(gameKey) {
+            activeGameKey = gameKey;
+            document.querySelectorAll('#games [id^="game-card-"]').forEach(card => {
+                card.classList.remove('border-blue-600', 'bg-blue-50/50');
+            });
+
+            const activeCard = document.getElementById(`game-card-${gameKey}`);
+            if (activeCard) {
+                activeCard.classList.add('border-blue-600', 'bg-blue-50/50');
+            }
+
+            const data = gamesData[gameKey][currentLang];
+            if (data) {
+                document.getElementById('game-title').innerHTML = `<span>⚡ ${data.title}</span>`;
+                document.getElementById('game-desc').innerText = data.desc;
+                document.getElementById('game-meta-genre').innerText = data.genre;
+                document.getElementById('game-meta-lang').innerText = gamesData[gameKey][currentLang === 'tr' ? 'tr' : 'en'].lang;
+                
+                const playBtn = document.getElementById('game-play-btn');
+                playBtn.href = gameKey === 'tiny-thrones' ? 'https://apps.apple.com/br/app/tiny-thrones/id6757228822?l=en-GB' : 'https://sarper-bal.itch.io';
+                playBtn.innerText = currentLang === 'tr' ? `HEMEN KEŞFET: ${data.title} 🚀` : `EXPLORE TITLE: ${data.title} 🚀`;
+
+                const hList = document.getElementById('game-highlights-list');
+                const hContainer = document.getElementById('game-highlights');
+                hList.innerHTML = '';
+                data.highlights.forEach(h => {
+                    const li = document.createElement('li');
+                    li.innerHTML = h;
+                    hList.appendChild(li);
+                });
+                hContainer.classList.remove('hidden');
+            }
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /* STREAMING_CHUNK: Declaring dev diary data maps and file lists... */
+        /* DİNAMİK KRONOLOJİK GELİŞİM GÜNLÜĞÜ MATRİSİ (En Son Versiyon En Üstte / İmla Kontrolleri Yapıldı) */
+        const devStepsData = {
+            6: {
+                tr: {
+                    badge: "AŞAMA 06: ÜRETİM & OPTİMİZASYON",
+                    title: "Arcade Idle Tycoon Açık Dünya & Mesh Birleştirme Optimizasyonu",
+                    desc: "Tiny Thrones'un nihai üretim sürümünde, oyuncuların genişleyen bir 3D kasabayı yönettikleri zengin bir açık dünya yapısı kurgulandı. Bu devasa 3D dünyayı mobil platformlarda saniyede 60 FPS hızında pürüzsüz çalıştırabilmek adına, köydeki tüm statik yapılar ve mesh'ler çalışma zamanında dinamik olarak birleştirildi (Mesh Combining). Bu sayede GPU üzerindeki çizim çağrısı (draw call) sayıları minimum seviyeye indirilerek son derece optimize ve akıcı bir 3D açık dünya performansı elde edildi.",
+                    bullets: [
+                        "<strong>Mesh Merging (Combining):</strong> Sahnedeki yüzlerce bağımsız statik objenin çalışma zamanında tek bir mesh altında birleştirilerek Draw Call sayılarının dramatik şekilde azaltılması.",
+                        "<strong>Optimized 3D Open World:</strong> Mobil donanımları yormayan dynamic LOD (Level of Detail) hiyerarşileri ve bellek dostu sahne yükleme optimizasyonları.",
+                        "<strong>Lucky Spin & Progress:</strong> JSON tabanlı veri saklama (Data Persistence) sistemleri ile kesintisiz tycoon ilerleme mekaniği."
+                    ]
+                },
+                en: {
+                    badge: "PHASE 06: PRODUCTION & OPTIMIZATION",
+                    title: "Arcade Idle Tycoon 3D Open World & Mesh Combining Systems",
+                    desc: "In the final production environment of Tiny Thrones, we engineered a scalable 3D open-world town management loop. To guarantee an unthrottled 60 FPS profile on mid-tier mobile hardware, I developed a runtime dynamic Mesh Combiner. This system automatically batches independent static polygon allocations into consolidated data meshes, shrinking active Draw Call overhead.",
+                    bullets: [
+                        "<strong>Mesh Merging (Combining):</strong> Packaging hundreds of isolated models into single structures at runtime, squeezing GPU draw call overhead down instantly.",
+                        "<strong>Optimized 3D Open World:</strong> Constructing efficient mobile-first Level of Detail (LOD) states and responsive culling filters.",
+                        "<strong>Data Persistence:</strong> Synchronizing tycoon resource variables safely across sessions using optimized JSON data pipelines."
+                    ]
+                },
+                media: [
+                    { type: "video", url: "2Vid.mp4" },
+                    { type: "image", url: "IMG_8844.PNG" }, // DEĞİŞİKLİK: PNG uzantısı büyük harfle düzeltildi
+                    { type: "image", url: "IMG_8822.jpg" }
+                ]
+            },
+            5: {
+                tr: {
+                    badge: "AŞAMA 05: UYGULAMA İÇİ SATIN ALMA (IAP) & MAĞAZA",
+                    title: "In-App Purchase (IAP) Mağazası ve App Store Connect Lansmanı",
+                    desc: "Mağaza ve gelir modellerinin oyuna entegre edildiği kritik canlı yayın aşaması. Oyuncuların gerçek parayla elmas paketleri ve reklam kaldırma (AD Remove Package) satın alabileceği Unity In-App Purchasing (IAP) altyapısı kurgulandı. Apple Store Connect StoreKit API uyumluluğu, ürün kataloglarının Scriptable Objects ile senkronizasyonu og TestFlight test süreçleri başarıyla yönetildi.",
+                    bullets: [
+                        "<strong>Unity IAP Integration:</strong> App Store StoreKit API entegrasyonu ile güvenli satın alma akışları ve fatura doğrulama (receipt validation) işlemleri.",
+                        "<strong>Dynamic Ad Integration:</strong> AdMob ve Unity Ads hibrit reklam gelir sistemleri ile dengeli para kazanma modeli.",
+                        "<strong>Compliance & Safe Areas:</strong> Çentikli ekranlı dikey telefonlar için otomatik UI güvenli alan (Safe Area) hesaplama algoritmaları."
+                    ]
+                },
+                en: {
+                    badge: "PHASE 05: MONETIZATION & LIVE OPERATIONS",
+                    title: "In-App Purchase (IAP) Storefront & App Store Compliance",
+                    desc: "Deploying secure merchant nodes inside live builds. I implemented Unity In-App Purchasing (IAP) configurations to manage real-money transactions including dynamic gem bundles and ad-free product structures. Handled validation patterns via StoreKit APIs, synchronized IDs using Scriptable Objects, and deployed active TestFlight candidate pipelines.",
+                    bullets: [
+                        "<strong>Unity IAP Integration:</strong> Setting up secure asynchronous client handshakes combined with strict validation protocols.",
+                        "<strong>Hybrid Ads Integration:</strong> Blending AdMob data banners smoothly with rewarding video cycles to establish passive yield vectors.",
+                        "<strong>Safe Area Adaptation:</strong> Writing robust anchor scripts tracking notch offsets dynamically on modern tall smartphone screens."
+                    ]
+                },
+                media: [
+                    { type: "video", url: "AppStoreVideo_01.mp4" },
+                    { type: "image", url: "2.jpg" }
+                ]
+            },
+            4: {
+                tr: {
+                    badge: "AŞAMA 04: AKSİYON & ZİNDAN SAVAŞLARI",
+                    title: "Zindan Çatışma Sistemi & Roguelike Kart Seçimleri",
+                    desc: "Düşman dalgalarına karşı asa ile ateş ettiğimiz, roguelike esintili Stage Buff (Fire Rate, Radius vb.) kart seçim ekranlarına sahip dinamik zindan çatışma sistemi. Oyuncunun parmağını ekrandan çektiğinde ateş etmesini sağlayan (Release to Shoot) mobil odaklı kontroller kurgulandı. Unity'nin modern New Input System mimarisi ile her türlü mobil cihaza pürüzsüz uyum sağlandı.",
+                    bullets: [
+                        "<strong>Release to Shoot Control:</strong> Modern New Input System kullanarak dokunmatik ekran üzerinde hassas hareket ve serbest bırakınca otomatik hedef alma algoritması.",
+                        "<strong>Stage Buff Mechanics:</strong> Scriptable Objects ve Event-Driven mimariyle tasarlanmış, anlık mermi hızı ve hasar alanını artıran yükseltme kartları.",
+                        "<strong>URP Parçacık Efektleri:</strong> Mobil performansı sarsmayan optimize URP particle sistemleri ve vuruş hissiyatı yüksek VFX'ler."
+                    ]
+                },
+                en: {
+                    badge: "PHASE 04: CORE COMBAT ENGINES",
+                    title: "Dungeon Battle Mechanics & Roguelike Ability Selections",
+                    desc: "A fluid vertical combat module where users discharge targeted area-of-effect spells. Features an incremental roguelike stage upgrade layout (Fire Rate multipliers, Blast Radius, Critical matrices) mapped on top of high-performance loops.",
+                    bullets: [
+                        "<strong>Unity New Input System:</strong> Utilizing responsive gesture event mapping to implement a mobile-centric 'Release to Shoot' interaction blueprint.",
+                        "<strong>Event-Driven Buff Nodes:</strong> Relaying upgrade parameters cleanly through data-containers powered by decoupled custom events.",
+                        "<strong>URP Particle FX:</strong> Crafting high-impact combat feedback without overloading vertex pipelines on lower-tier mobile chips."
+                    ]
+                },
+                media: [
+                    { type: "video", url: "1Vid.mp4" }
+                ]
+            },
+            3: {
+                tr: {
+                    badge: "AŞAMA 03: BULMACA & PIXEL FLOW MEKANİĞİ",
+                    title: "Pixel Flow Tarzı Renk Akış Bulmacası & Izgara Savunma Mantığı",
+                    desc: "Popüler 'Pixel Flow' oyununun mekaniklerinden esinlenerek geliştirdiğim, oyuncunun renk akışlarını birbiriyle eşleştirip kuleleri tetiklediği yenilikçi bir savunma ızgarası (Grid Matrix). Bu aşamada, oyuncunun renkli blokları birbiriyle kesiştirmeden doğru hedeflere bağlayarak kuleleri aktifleştirdiği ve düşman akınlarına karşı büyü mermileri ateşlediği stratejik bir bulmaca katmanı kuruldu.",
+                    bullets: [
+                        "<strong>Pixel Flow Connection Logic:</strong> Renkli akışların ızgara üzerinde birbirini kesmeden hedefe ulaşmasını hesaplayan dinamik yol bulma (Pathfinding) algoritmaları.",
+                        "<strong>Flood-Fill Grid Solver:</strong> Izgara üzerindeki renk bitişikliklerini ve kapalı alan durumlarını milisaniyeler içinde çözen matris tarama sistemi.",
+                        "<strong>Asenkron Kule Tetikleyicileri:</strong> Bağlantı başarıyla tamamlandığı an Unity Event yapıları ile ilgili savunma kulesini asenkron olarak ayağa kaldıran yapı."
+                    ]
+                },
+                en: {
+                    badge: "PHASE 03: MATRIX LOGIC & MATCHING",
+                    title: "Pixel Flow Style Node Connection & Grid Defense Routing",
+                    desc: "Inspired directly by the rewarding mechanics found in 'Pixel Flow'. Players navigate a 2D node grid on a 3D canvas, matching identical color nodes without crossing paths. Connecting paths dispatches thread-safe messages to wake up defensive tactical elements.",
+                    bullets: [
+                        "<strong>Pixel Flow Routing:</strong> Programming strict pathfinding matrices preventing intersecting node linkages over active grid blocks.",
+                        "<strong>Flood-Fill Grid Solvers:</strong> Running instant recursive array evaluations to assess completed paths under a fraction of a millisecond.",
+                        "<strong>Event-Driven Tower Hooks:</strong> Dispatching events to signal static spell structures upon complete matching states."
+                    ]
+                },
+                media: [
+                    { type: "image", url: "Gemini_Generated_Image_ty1v2yty1v2yty1v.jpg" },
+                    { type: "image", url: "Gemini_Generated_Image_9qygbr9qygbr9qyg.jpg" },
+                    { type: "image", url: "IMG_8584.jpg" },
+                    { type: "image", url: "IMG_8582.jpg" },
+                    { type: "image", url: "IMG_8574.jpg" },
+                    { type: "image", url: "IMG_8570.jpg" }
+                ]
+            },
+            2: {
+                tr: {
+                    badge: "AŞAMA 02: KÖY KURMA TEMELLERİ",
+                    title: "Erken Aşama Arcade Idle & Üretim Binaları",
+                    desc: "Kaynaktan kaynağa dönüşüm zincirlerinin (Kafatasından Kristale dönüştüren fırınlar) ve ilk köy binalarının yükseltildiği erken aşama prototip sürümü. Bu fazda, binaların durumlarını (Idle, Upgrading, Operating) yöneten Finite State Machine (FSM) tasarımı kurgulanmıştır.",
+                    bullets: [
+                        "<strong>Finite State Machine (FSM):</strong> İşçilerin ve binaların durumlarını organize eden sonlu durum makinesi mimarisi.",
+                        "<strong>Asynchronous Coroutines:</strong> Üretim süreçlerini ana işlemciyi kilitlemeden yöneten asenkron Unity Coroutine döngüleri.",
+                        "<strong>Canvas Optimization:</strong> Rebuild yükünü azaltmak için static ve dynamic canvas elementlerinin ayrıştırılması."
+                    ]
+                },
+                en: {
+                    badge: "PHASE 02: RESOURCE CONVERSION LOOPS",
+                    title: "Early Prototyping & Finite State Machine Construction",
+                    desc: "Establishing core production sequences (transforming monster trophies into magical gem nodes). Designed strict state validation structures to manage active builder assets smoothly.",
+                    bullets: [
+                        "<strong>Finite State Machine (FSM):</strong> Controlling asset parameters safely without race condition bugs.",
+                        "<strong>Unity Coroutines:</strong> Scheduling smelting timers efficiently on multi-frame queues to keep main threads clean.",
+                        "<strong>Canvas Optimization:</strong> Partitioning heavy mobile layouts into individual sub-canvases to bypass UI update costs."
+                    ]
+                },
+                media: [
+                    { type: "image", url: "l2.jpg" },
+                    { type: "image", url: "l3.PNG" },
+                    { type: "image", url: "IMG_8388.jpg" }
+                ]
+            },
+            1: {
+                tr: {
+                    badge: "AŞAMA 01: TEMEL HAREKET & RUNNER",
+                    title: "İlk Karakter Kontrolü & Çarpışma Testleri (Grayboxing)",
+                    desc: "Tiny Thrones projesinin fikir aşamasındaki ilk testleri. Karakterin pürüzsüz sanal joystick ile hareket ettirilmesi, engellerle çarpışması, toplanabilir altın ve elmas mekaniklerinin C# nesne yönelimli (OOP) yapıyla prototiplenmesi.",
+                    bullets: [
+                        "<strong>Virtual Joystick Math:</strong> Dokunmatik ekran girdi koordinatlarını yumuşak dönüş (Slerp) og ivmeyle birleştiren hareket kodlaması.",
+                        "<strong>Physics & Collision Optimization:</strong> Rigidbody ve Collider bileşenlerinin mobil cihazlar için optimize ayarlanması, gereksiz fizik hesaplamalarının elenmesi.",
+                        "<strong>Grayboxing & Iteration:</strong> Geometrik bloklarla oyunun vuruş ve koşu hissiyatını (game feel) ölçmek için kurulan hızlı test sahneleri."
+                    ]
+                },
+                en: {
+                    badge: "PHASE 01: PROTOTYPING & GRAYBOXING",
+                    title: "Core Mechanics Initiation & Physics Iteration Cycles",
+                    desc: "The absolute origin of Tiny Thrones. Verifying primary motion behaviors, collision boundaries, and basic drop items using classic OOP principles in primitive graybox configurations.",
+                    bullets: [
+                        "<strong>Virtual Joystick Calculations:</strong> Translating relative touchscreen vectors to handle smooth character rotations via Slerp functions.",
+                        "<strong>Physics Optimizations:</strong> Stripping redundant physics layer metrics to enable lightning-fast collision detection on mobile processors.",
+                        "<strong>Game Feel Refinement:</strong> Running quick layout tests using untextured block primitives to maximize input responsiveness."
+                    ]
+                },
+                media: [
+                    { type: "image", url: "IMG_8385.jpg" },
+                    { type: "image", url: "IMG_8386.jpg" },
+                    { type: "image", url: "IMG_8391.jpg" }
+                ]
+            }
+        };
+
+        let activeStepNum = 6;
+
+        /* -------------------------------------------------------------------------- */
+        /* STREAMING_CHUNK: Building the media rendering pipelines with smart automatic extension recovery fallbacks... */
+        /* AKILLI RESİM UZANTI RECOVERY DESTEK SİSTEMİ (GitHub Pages Case-Sensitivity Koruma Katmanı) */
+        function selectDevStep(stepNum) {
+            activeStepNum = stepNum;
+            playSound('click');
+            addXP(10);
+
+            for (let i = 1; i <= 6; i++) {
+                const tab = document.getElementById(`dev-step-tab-${i}`);
+                if (tab) {
+                    if (i === stepNum) {
+                        tab.className = "gui-btn-gold text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center";
+                    } else {
+                        tab.className = "gui-btn text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center";
+                    }
+                }
+            }
+
+            const stepData = devStepsData[stepNum];
+            if (stepData) {
+                const data = stepData[currentLang];
+                document.getElementById('dev-step-badge').innerText = data.badge;
+                document.getElementById('dev-step-title').innerText = data.title;
+                document.getElementById('dev-step-desc').innerText = data.desc;
+
+                const bulletUl = document.getElementById('dev-step-bullets');
+                bulletUl.innerHTML = '';
+                data.bullets.forEach(bullet => {
+                    const li = document.createElement('li');
+                    li.innerHTML = bullet;
+                    bulletUl.appendChild(li);
+                });
+
+                const imgContainer = document.getElementById('dev-step-images');
+                imgContainer.innerHTML = '';
+                stepData.media.forEach(item => {
+                    const mediaDiv = document.createElement('div');
+                    mediaDiv.className = "flex-shrink-0 w-44 md:w-56 aspect-[9/19] rounded-2xl overflow-hidden border-4 border-blue-900 shadow-md snap-center relative bg-slate-100 hover:scale-102 transition-all cursor-pointer";
+                    
+                    if (item.type === "video") {
+                        mediaDiv.innerHTML = `
+                            <video src="${item.url}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+                            <div class="hidden absolute inset-0 bg-gradient-to-tr from-slate-800 to-indigo-950 flex flex-col items-center justify-center p-4 text-center text-white text-[10px] font-bold">
+                                <span class="text-xl mb-1">🎬</span>
+                                <span class="font-mono text-[9px] truncate w-full">${item.url}</span>
+                                <span class="text-[8px] opacity-70 mt-2 font-sans" data-lang-tr="Canlı Sunucuda Oynatılır" data-lang-en="Live Server Required">Canlı Sunucuda Oynatılır</span>
+                            </div>
+                            <span class="absolute bottom-1 right-2 bg-black/60 px-1.5 py-0.5 text-[8px] font-mono text-white rounded">🎥 MP4 Stream</span>
+                        `;
+                        const vidEl = mediaDiv.querySelector('video');
+                        vidEl.addEventListener('error', function() {
+                            this.style.display = 'none';
+                            this.nextElementSibling.classList.remove('hidden');
+                        });
+                    } else {
+                        // tryFallbackExtensions metodu img onerror olayına akıllıca atanır
+                        mediaDiv.innerHTML = `
+                            <img src="${item.url}" alt="${data.title}" class="w-full h-full object-cover" onerror="tryFallbackExtensions(this, '${item.url}', 0)">
+                            <span class="absolute bottom-1 right-2 bg-black/60 px-1.5 py-0.5 text-[8px] font-mono text-white rounded">🖼️ ${item.url}</span>
+                        `;
+                    }
+                    imgContainer.appendChild(mediaDiv);
+                });
+            }
+        }
+
+        // Akıllı Uzantı Fallback Algoritması: Büyük/küçük harf veya uzantı hatalarını anında iyileştirir
+        function tryFallbackExtensions(imgEl, originalUrl, fallbackIndex) {
+            const alternativeExtensions = ['.PNG', '.jpg', '.png', '.JPG', '.jpeg', '.PNG'];
+            const lastDot = originalUrl.lastIndexOf('.');
+            if (lastDot === -1) return;
+            const baseName = originalUrl.substring(0, lastDot);
+            const currentExt = originalUrl.substring(lastDot);
+
+            let nextIndex = fallbackIndex;
+            while (nextIndex < alternativeExtensions.length) {
+                const nextExt = alternativeExtensions[nextIndex];
+                nextIndex++;
+                if (nextExt !== currentExt) {
+                    imgEl.src = baseName + nextExt;
+                    imgEl.setAttribute('onerror', `tryFallbackExtensions(this, '${originalUrl}', ${nextIndex})`);
+                    return;
+                }
+            }
+            // Tüm uzantı denemeleri biterse sevimli placeholder'ı yükle
+            imgEl.onerror = null;
+            imgEl.src = `https://placehold.co/360x760/1e3a8a/ffffff?text=${originalUrl}`;
+        }
+
+        const skillsData = {
+            unity: {
+                tr: {
+                    title: "Unity Engine & C# Core",
+                    desc: "C# nesne yönelimli programlama diline üst düzey hakimiyet. Unity3D motorunun sunduğu tüm fiziksel elementler, çarpışma algoritmaları (Physics & Collision), asenkron çalışan Coroutines yapıları, NavMesh yapay zeka haritalandırmaları og en yeni modern Unity New Input System entegrasyonlarını kapsar.",
+                    chips: ["Unity3D", "C# Language", "Coroutines", "NavMesh AI", "Physics & Collision", "New Input System"]
+                },
+                en: {
+                    title: "Unity Engine & C# Core",
+                    desc: "Expert-level mastery of C# and the comprehensive core of the Unity3D architecture. Seamless implementation of optimized rigid physics, non-blocking coroutine sequencing, multi-agent NavMesh pathfinding configurations, and modern touch logic using the New Input System architecture.",
+                    chips: ["Unity3D", "C# Language", "Coroutines", "NavMesh AI", "Physics & Collision", "New Input System"]
+                }
+            },
+            architecture: {
+                tr: {
+                    title: "Mimari Tasarım & SOLID",
+                    desc: "Ölçeklenebilir, modüler og kolay yönetilebilir temiz kod (Clean Code) mimarileri tasarlama yeteneğim. Event-driven mimariler, SOLID yazılım prensipleri, Scriptable Objects tabanlı veri odaklı (data-driven) oyun tasarımı ve Singleton, Observer, Factory ile FSM (Sonlu Durum Makineleri) kalıpları.",
+                    chips: ["SOLID", "Scriptable Objects", "Event-Driven", "Design Patterns", "State Machines", "Modular Architecture"]
+                },
+                en: {
+                    title: "Architecture & SOLID Systems",
+                    desc: "Architecting high-scale, decoupled game architectures following clean-code guidelines. Specialized in decoupled Event-Driven systems, Scriptable Object data configurations, and loose structural patterns including modular Finite State Machines (FSM).",
+                    chips: ["SOLID", "Scriptable Objects", "Event-Driven", "Design Patterns", "State Machines", "Modular Architecture"]
+                }
+            },
+            mobile: {
+                tr: {
+                    title: "Mobil Optimizasyon & Performans",
+                    desc: "Mobil cihazlarda yüksek FPS hedefli, pil tüketimi ve donmaları önleyen performans geliştirmeleri. Object Pooling ile bellek tasarrufu, çöp toplayıcı (GC) optimizasyonları, mobil dokunmatik ekran uyumları ve Screen Safe Area ekran alanı entegrasyonları.",
+                    chips: ["Object Pooling", "Garbage Collection Optimization", "Memory Management", "Screen Safe Areas", "Touch Inputs", "Mobile Profiling"]
+                },
+                en: {
+                    title: "Mobile Optimization & Frame Tuning",
+                    desc: "Securing stable high-frame rates on target silicon while cutting platform thermal throttling. Building strict structural Object Pooling arrays to avoid garbage collection memory pressure, optimizing draw calls, and adapting responsive Notch layouts.",
+                    chips: ["Object Pooling", "Garbage Collection Optimization", "Memory Management", "Screen Safe Areas", "Touch Inputs", "Mobile Profiling"]
+                }
+            },
+            monetization: {
+                tr: {
+                    title: "Monetization & Cloud Services",
+                    desc: "Uygulama içi satın alma (IAP), reklam kurguları og bulut sistemlerinin oyuna dahil edilmesi. Unity Ads, Unity IAP, AdMob entegrasyonları, Google Cloud, AWS altyapıları ve Firebase veri tabanı.",
+                    chips: ["Unity Ads", "Unity IAP", "AdMob", "Firebase DB & Auth", "Google Cloud / AWS", "LiveOps Analytics"]
+                },
+                en: {
+                    title: "Monetization & Cloud Integration",
+                    desc: "Successfully integrating complex transactional APIs and server telemetry features. Proficient with managing active Unity In-App Purchasing (IAP) schemas, AdMob data networks, Firebase authorization, and multi-thread live analytical frameworks.",
+                    chips: ["Unity Ads", "Unity IAP", "AdMob", "Firebase DB & Auth", "Google Cloud / AWS", "LiveOps Analytics"]
+                }
+            }
+        };
+
+        let activeSkillKey = 'unity';
+
+        function selectSkill(skillKey) {
+            activeSkillKey = skillKey;
+            addXP(15);
+
+            document.querySelectorAll('#skills .gui-panel').forEach(card => {
+                card.classList.remove('border-blue-600', 'bg-blue-50/50');
+            });
+
+            const activeCard = document.getElementById(`skill-card-${skillKey}`);
+            if (activeCard) {
+                activeCard.classList.add('border-blue-600', 'bg-blue-50/50');
+            }
+
+            const data = skillsData[skillKey][currentLang];
+            if (data) {
+                document.getElementById('skill-title').innerHTML = `<span>⚔️ ${data.title}</span>`;
+                document.getElementById('skill-desc').innerText = data.desc;
+
+                const chipsContainer = document.getElementById('skill-chips');
+                chipsContainer.innerHTML = '';
+                data.chips.forEach(chip => {
+                    const span = document.createElement('span');
+                    span.className = "px-2 py-0.5 text-[10px] font-mono font-bold bg-blue-100 border border-blue-300 text-blue-700 rounded-lg";
+                    span.innerText = chip;
+                    chipsContainer.appendChild(span);
+                });
+            }
+        }
+
+        function toggleQuest(questId) {
+            playSound('click');
+            addXP(10);
+            const detailPanel = document.getElementById(`${questId}-detail`);
+            const icon = document.getElementById(`${questId}-icon`);
+
+            if (detailPanel.classList.contains('hidden')) {
+                detailPanel.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                detailPanel.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        const itemsData = {
+            'lang-en': {
+                tr: {
+                    type: "EŞYA TÜRÜ: DİL MUSKASI",
+                    title: "🇬🇧 İngilizce Dil Becerisi",
+                    desc: "Teknik doküman yazımı ve okuma, global düzeyde oyun geliştirme toplulukları ile tam entegrasyon sağlayacak düzeyde ileri İngilizce (Proficient) bilgisi."
+                },
+                en: {
+                    type: "ITEM CLASSIFICATION: KNOWLEDGE CHARM",
+                    title: "🇬🇧 Professional English Mastery",
+                    desc: "Proficient level competence. Fully equipped to draft architecture logs, study engine updates, coordinate publishing deals, and maintain global communications."
+                }
+            },
+            'lang-fr': {
+                tr: {
+                    type: "EŞYA TÜRÜ: DİL MUSKASI",
+                    title: "🇫🇷 Fransızca Dil Becerisi",
+                    desc: "Temel seviyede (Basic) Fransızca dil bilgisi. Yeni bir dil öğrenme isteği ve kültürel çeşitlilik donanımı."
+                },
+                en: {
+                    type: "ITEM CLASSIFICATION: KNOWLEDGE CHARM",
+                    title: "🇫🇷 Elementary French Module",
+                    desc: "Basic A2 understanding. Always eager to absorb additional languages and interface with varied workplace team setups."
+                }
+            },
+            'tool-git': {
+                tr: {
+                    type: "EŞYA TÜRÜ: ALTYAPI ANAHTARI",
+                    title: "🔑 Versiyon Kontrolü (Git & CI/CD)",
+                    desc: "Git ve GitHub üzerinde takım çalışmalarına uygun, konflikt çözme yeteneğine sahip, düzenli commit ve branch yönetimi yetenekleri."
+                },
+                en: {
+                    type: "ITEM CLASSIFICATION: SYSTEM KEY",
+                    title: "🔑 Version Management (Git & CI/CD)",
+                    desc: "Securing team branching processes. Mastered at cleaning complex source merge conflicts, squash protocols, and organizing deployment scripts."
+                }
+            },
+            'tool-store': {
+                tr: {
+                    type: "EŞYA TÜRÜ: MAĞAZA NİŞANI",
+                    title: "🏆 App Store Connect & TestFlight",
+                    desc: "Apple standartlarına tam uyumlu mobil oyun yayımlama, test süreçlerini yürütme, teknik gereksinimleri (Build & SDK settings) karşılama yetkinliği."
+                },
+                en: {
+                    type: "ITEM CLASSIFICATION: MAJESTIC EMBLEM",
+                    title: "🏆 App Store Connect & Release Ops",
+                    desc: "Full cycle application distribution proficiency. Mapping safe provisioning, uploading archive bundles, structuring TestFlight, and auditing store parameters."
+                }
+            }
+        };
+
+        let activeItemKey = 'lang-en';
+
+        function selectItem(itemKey) {
+            activeItemKey = itemKey;
+            playSound('equip');
+            addXP(15);
+
+            document.querySelectorAll('#inventory [id^="item-"]').forEach(item => {
+                item.className = "aspect-square bg-white border-2 border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm";
+            });
+
+            const activeItem = document.getElementById(`item-${itemKey}`);
+            if (activeItem) {
+                activeItem.className = "aspect-square bg-white border-4 border-blue-600 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm";
+            }
+
+            const data = itemsData[itemKey][currentLang];
+            if (data) {
+                document.getElementById('inventory-item-type').innerText = data.type;
+                document.getElementById('inventory-item-title').innerText = data.title;
+                document.getElementById('inventory-item-desc').innerText = data.desc;
+            }
+        }
+
+        function handleSaveSubmit(event) {
+            event.preventDefault();
+            const name = document.getElementById('form-name').value;
+            const email = document.getElementById('form-email').value;
+            const message = document.getElementById('form-message').value;
+
+            const logEntry = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                message: message,
+                date: new Date().toLocaleTimeString()
+            };
+
+            let logs = JSON.parse(localStorage.getItem('sarper_save_logs')) || [];
+            logs.unshift(logEntry);
+            localStorage.setItem('sarper_save_logs', JSON.stringify(logs));
+
+            renderSaveLedger();
+            playSound('success');
+            addXP(25);
+
+            document.getElementById('save-form').reset();
+            const toastTitle = currentLang === 'tr' ? 'Oyun Kaydedildi!' : 'Game Saved!';
+            const toastDesc = currentLang === 'tr' ? 'Veriler yerel debug günlüğüne başarıyla işlendi ve +25 XP kazandın!' : 'Variables written safely to database logs! Earned +25 XP!';
+            showToast('💾', toastTitle, toastDesc);
+        }
+
+        function sendDirectMail() {
+            const name = document.getElementById('form-name').value || 'Ziyaretçi';
+            const email = document.getElementById('form-email').value || '';
+            const message = document.getElementById('form-message').value || '';
+
+            if(!message) {
+                const warningMsg = currentLang === 'tr' ? 'Lütfen mail göndermeden önce ileti kısmını doldurun.' : 'Please add a message text before triggering your mail app.';
+                showToast('⚠️', currentLang === 'tr' ? 'Mesaj Boş!' : 'Message Empty!', warningMsg);
+                return;
+            }
+
+            playSound('success');
+            addXP(10); 
+            const subject = encodeURIComponent(`Game Dev Portfolio İletişim - ${name}`);
+            const body = encodeURIComponent(`Merhaba Sarper,\n\nBen ${name} (${email}).\n\nMesajım:\n${message}\n\n---\nBu mail oyun geliştirici portfolyonuz üzerinden gönderilmiştir.`);
+            window.location.href = `mailto:sarperbal1@gmail.com?subject=${subject}&body=${body}`;
+        }
+
+        function renderSaveLedger() {
+            const logs = JSON.parse(localStorage.getItem('sarper_save_logs')) || [];
+            const container = document.getElementById('save-ledger-list');
+            
+            if (logs.length === 0) {
+                const logLabel = currentLang === 'tr' ? 'Henüz kaydedilmiş yerel debug logu bulunmuyor.' : 'No local debug signals detected on system.';
+                container.innerHTML = `<p class="text-slate-500 italic text-center">${logLabel}</p>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            logs.forEach(log => {
+                const div = document.createElement('div');
+                div.className = "bg-slate-800 p-2 rounded-lg border border-slate-700 space-y-0.5 text-[9px]";
+                div.innerHTML = `
+                    <div class="flex justify-between text-slate-400 font-bold">
+                        <span>[DEBUG] PLAYER: ${log.name}</span>
+                        <span>${log.date}</span>
+                    </div>
+                    <p class="text-emerald-400 font-medium truncate">${log.message}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        let currentLang = 'tr';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            
+            document.querySelectorAll('[data-lang-tr]').forEach(el => {
+                el.innerHTML = lang === 'tr' ? el.getAttribute('data-lang-tr') : el.getAttribute('data-lang-en');
+            });
+
+            document.querySelectorAll('[data-lang-placeholder-tr]').forEach(el => {
+                el.placeholder = lang === 'tr' ? el.getAttribute('data-lang-placeholder-tr') : el.getAttribute('data-lang-placeholder-en');
+            });
+
+            selectGame(activeGameKey);
+            selectDevStep(activeStepNum);
+            selectSkill(activeSkillKey);
+            selectItem(activeItemKey);
+            renderSaveLedger();
+
+            const trBtn = document.getElementById('lang-btn-tr');
+            const enBtn = document.getElementById('lang-btn-en');
+            
+            if (lang === 'tr') {
+                trBtn.className = "px-2 py-0.5 bg-blue-600 text-white rounded-lg border border-blue-900 shadow-sm text-[10px] font-bold transition-all";
+                enBtn.className = "px-2 py-0.5 bg-transparent text-slate-700 rounded-lg text-[10px] font-bold transition-all";
+            } else {
+                trBtn.className = "px-2 py-0.5 bg-transparent text-slate-700 rounded-lg text-[10px] font-bold transition-all";
+                enBtn.className = "px-2 py-0.5 bg-blue-600 text-white rounded-lg border border-blue-900 shadow-sm text-[10px] font-bold transition-all";
+            }
+        }
+
+        window.onload = function() {
+            lucide.createIcons();
+            setLanguage('tr'); 
+        };
+    </script>
+</body>
+</html>    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide İkon Kütüphanesi -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- GUI Pro Minimal Blue Stil Matrisi -->
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #f4f9ff;
+            background-image: radial-gradient(#bfdbfe 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+        h1, h2, h3, h4, .font-cozy {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .gui-panel {
+            background-color: #ffffff;
+            border: 4px solid #1e3a8a;
+            border-radius: 24px;
+            box-shadow: 0 8px 0 0 #1e3a8a;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .gui-panel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 0 0 #1e3a8a;
+        }
+        .gui-panel-blue {
+            background-color: #f0f7ff;
+            border: 4px solid #2563eb;
+            border-radius: 24px;
+            box-shadow: 0 8px 0 0 #1d4ed8;
+        }
+        .gui-panel-parchment {
+            background-color: #fefdf6;
+            border: 4px solid #78350f;
+            border-radius: 24px;
+            box-shadow: 0 8px 0 0 #78350f;
+        }
+        .gui-btn {
+            background-color: #3b82f6;
+            color: #ffffff;
+            border: 3px solid #1e3a8a;
+            border-radius: 16px;
+            box-shadow: 0 4px 0 0 #1e3a8a;
+            transition: all 0.1s ease;
+        }
+        .gui-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 0 #1e3a8a;
+        }
+        .gui-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0 0 #1e3a8a;
+        }
+        .gui-btn-gold {
+            background-color: #f59e0b;
+            border: 3px solid #78350f;
+            box-shadow: 0 4px 0 0 #78350f;
+        }
+        .gui-btn-gold:hover {
+            box-shadow: 0 6px 0 0 #78350f;
+        }
+        .gui-btn-gold:active {
+            box-shadow: 0 0px 0 0 #78350f;
+        }
+        .gui-btn-green {
+            background-color: #10b981;
+            border: 3px solid #064e3b;
+            box-shadow: 0 4px 0 0 #064e3b;
+        }
+        .gui-btn-green:hover {
+            box-shadow: 0 6px 0 0 #064e3b;
+        }
+        .gui-btn-green:active {
+            box-shadow: 0 0px 0 0 #064e3b;
+        }
+        .bar-transition {
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cozy-float {
+            animation: float-gentle 4s ease-in-out infinite;
+        }
+        @keyframes float-gentle {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(2deg); }
+        }
+        .animate-lvl-shake {
+            animation: levelup-shake 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) 1;
+        }
+        @keyframes levelup-shake {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.3) rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900 pb-12">
+
     <!-- WEB AUDIO API SES MOTORU -->
     <script>
         let soundEnabled = true;
@@ -1513,14 +3017,3 @@
     </script>
 </body>
 </html>
-```
-eof
-
-### 🏆 Portfolyon Tüm Hatalardan Arındırılmış Olarak Canvas'ta Hazır!
-
-Geliştirme dosyandaki her bir dizeyi kusursuzlaştırdım. Yukarıdaki tekil **`index.html`** dosyasını doğrudan indirerek sorunsuzca kullanabilirsin. 
-
-#### 🚀 GitHub Pages Üzerinde "Sıfır Hata" ile Canlıya Alma Adımları:
-1. **Dosyayı Kaydet:** Yukarıdaki kod bloğunun sağ üst köşesinden kodu kopyala ve bilgisayarında boş bir metin belgesine yapıştırıp **`index.html`** olarak kaydet (Adının tam olarak küçük harflerle `index.html` olduğundan emin ol).
-2. **Medya Dosyalarını Aynı Dizine Yerleştir:** Gönderdiğin resimleri (`IMG_8844.jpg`, `2.jpg` vb.) ve videoları (`2Vid.mp4`, `1Vid.mp4`, `AppStoreVideo_01.mp4`), oluşturduğun bu `index.html` dosyası ile **tam olarak aynı klasörün içine (yan yana)** yerleştir. (Alt klasör oluşturma, her şey yan yana olsun).
-3. **GitHub'a Yükle & Yayına Al:** GitHub reponun **ana dizinine (root)** bu dosyaların tümünü sürükleyip bırak. Reponun *Settings -> Pages* alanından branch'ini **`main`** seçip kaydettiğinde, siten saniyeler içinde hatasız ve dikey videolarıyla birlikte yayına girecektir!
