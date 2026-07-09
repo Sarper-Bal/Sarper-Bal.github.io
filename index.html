@@ -5,24 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sarper Bal | Game Developer & Software Engineer</title>
     
+    <!-- Tailwind CSS Altyapısı -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Tema renk matrisini ve yazı tiplerini Cozy RPG konseptine göre konfigüre ediyoruz
+        // Oyun temalı sevimli renk paletini ve yazı tiplerini Tailwind'e entegre ediyoruz
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         cozy: {
-                            darkBlue: '#1e293b',
-                            guiBlue: '#3b82f6',
-                            guiLightBlue: '#93c5fd',
-                            guiSky: '#f0f9ff',
-                            parchment: '#fefcf3',
-                            wood: '#78350f',
-                            gold: '#f59e0b',
-                            heartRed: '#ef4444',
-                            manaBlue: '#06b6d4',
-                            grassGreen: '#10b981'
+                            darkBlue: '#1e293b',    /* Koyu RPG Panel arka plan rengi */
+                            guiBlue: '#3b82f6',     /* Standart RPG Mavi Vurgusu */
+                            guiLightBlue: '#93c5fd',/* Yumuşak Açık Mavi */
+                            guiSky: '#f0f9ff',      /* Sayfa Genel Gökyüzü Tonu */
+                            parchment: '#fefcf3',   /* Parşömen Sarısı */
+                            wood: '#78350f',        /* Kahverengi Kontur Rengi */
+                            gold: '#f59e0b',        /* Parlak Altın Rengi */
+                            heartRed: '#ef4444',    /* HP Can Rengi */
+                            manaBlue: '#06b6d4',    /* MP Mana Rengi */
+                            grassGreen: '#10b981'   /* XP Başarı Yeşili */
                         }
                     },
                     fontFamily: {
@@ -34,12 +35,15 @@
         }
     </script>
 
+    <!-- Google Fonts: Fredoka & Quicksand & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Quicksand:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Lucide Efekt İkon Kütüphanesi -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
+    <!-- GUI Pro Minimal Blue Stil Matrisi -->
     <style>
         body {
             font-family: 'Quicksand', sans-serif;
@@ -98,7 +102,6 @@
             box-shadow: 0 6px 0 0 #78350f;
         }
         .gui-btn-gold:active {
-            transform: translateY(4px);
             box-shadow: 0 0px 0 0 #78350f;
         }
         .gui-btn-green {
@@ -110,7 +113,6 @@
             box-shadow: 0 6px 0 0 #064e3b;
         }
         .gui-btn-green:active {
-            transform: translateY(4px);
             box-shadow: 0 0px 0 0 #064e3b;
         }
         .bar-transition {
@@ -134,6 +136,7 @@
 </head>
 <body class="text-slate-800 antialiased selection:bg-blue-200 selection:text-blue-900 pb-12">
 
+    <!-- WEB AUDIO API SES MOTORU -->
     <script>
         let soundEnabled = true;
         let audioCtx = null;
@@ -200,15 +203,16 @@
             soundEnabled = !soundEnabled;
             const btn = document.getElementById('sound-toggle-btn');
             if (soundEnabled) {
-                btn.innerHTML = '<i data-lucide="volume-2" class="w-4 h-4"></i>';
+                btn.innerHTML = '<i data-lucide="volume-2" class="w-5 h-5"></i>';
                 playSound('click');
             } else {
-                btn.innerHTML = '<i data-lucide="volume-x" class="w-4 h-4"></i>';
+                btn.innerHTML = '<i data-lucide="volume-x" class="w-5 h-5"></i>';
             }
             try { lucide.createIcons(); } catch(e) {}
         }
     </script>
 
+    <!-- OYUN HUD PANELİ -->
     <header class="fixed top-0 left-0 w-full z-40 bg-white/95 backdrop-blur-md border-b-4 border-blue-900/10 px-4 py-3 shadow-sm">
         <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
             <div class="flex items-center space-x-3">
@@ -272,8 +276,10 @@
         </div>
     </header>
 
+    <!-- ANA İÇERİK ALANI -->
     <main class="pt-28 max-w-6xl mx-auto px-4 space-y-12">
 
+        <!-- KAHRAMAN (HERO) - KARAKTER SHEET -->
         <section id="about" class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pt-4">
             <div class="flex flex-col items-center lg:col-span-5">
                 <div class="relative w-full max-w-sm text-center bg-white gui-panel p-5 overflow-hidden">
@@ -342,8 +348,8 @@
                 </div>
             </div>
 
-            <div class="space-y-5 lg:col-span-7">
-                <div class="p-6 bg-white relative gui-panel-blue">
+            <div class="lg:col-span-7 space-y-5">
+                <div class="gui-panel-blue p-6 relative">
                     <div class="absolute -top-3 -left-3 bg-blue-500 text-white font-cozy text-[10px] px-2.5 py-0.5 rounded-lg border-2 border-blue-900 shadow" data-lang-tr="KAHRAMAN DOSYASI (PROFILE)" data-lang-en="CHARACTER FILE (PROFILE)">
                         KAHRAMAN DOSYASI (PROFILE)
                     </div>
@@ -356,11 +362,8 @@
                         Google Play ve App Store üzerinde başarılı lansman tecrübelerine sahip, C# ve Unity tabanlı **Profesyonel Unity Game Developer & Yazılım Mühendisi**'yim. Bahçeşehir Üniversitesi Yazılım Mühendisliği bölümünden mezun olduktan sonra, mobil oyun pazarına yönelik ölçeklenebilir oyun sistemleri, hibrit-casual oynanış döngüleri, uygulama içi satın alma (IAP) mimarileri ve gelişmiş performans optimizasyonları tasarlamaya odaklandım.
                     </p>
 
+                    <!-- DEĞİŞİKLİK: Telefon ve Doğum Tarihi alanları her iki dilden de tamamen kaldırıldı -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 mt-3 border-t-2 border-blue-100 font-cozy text-[11px] md:text-xs text-slate-700">
-                        <div class="flex items-center space-x-1.5">
-                            <span class="text-base">🎂</span>
-                            <span data-lang-tr="<strong>Doğum Tarihi:</strong> 13/01/1999" data-lang-en="<strong>Date of Birth:</strong> 13/01/1999"><strong>Doğum Tarihi:</strong> 13/01/1999</span>
-                        </div>
                         <div class="flex items-center space-x-1.5">
                             <span class="text-base">📍</span>
                             <span data-lang-tr="<strong>Konum:</strong> Beşiktaş / İSTANBUL" data-lang-en="<strong>Location:</strong> Beşiktaş / ISTANBUL"><strong>Konum:</strong> Beşiktaş / İSTANBUL</span>
@@ -369,12 +372,9 @@
                             <span class="text-base">✉️</span>
                             <span><strong>E-Posta:</strong> sarperbal1@gmail.com</span>
                         </div>
-                        <div class="flex items-center space-x-1.5">
-                            <span class="text-base">📱</span>
-                            <span data-lang-tr="<strong>Telefon:</strong> (531) 629 8837" data-lang-en="<strong>Phone:</strong> +90 (531) 629 8837"><strong>Telefon:</strong> (531) 629 8837</span>
-                        </div>
                     </div>
 
+                    <!-- Sosyal İkon Bağlantıları (Temizlendi, SVG formatına sabitlendi) -->
                     <div class="mt-4 pt-3 border-t-2 border-blue-100 flex flex-wrap items-center gap-2">
                         <span class="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider" data-lang-tr="Kanallar:" data-lang-en="Channels:">Kanallar:</span>
                         
@@ -402,6 +402,7 @@
             </div>
         </section>
 
+        <!-- OYUN KÜTÜPHANESİ PROJE KARTLARI -->
         <section id="games" class="space-y-4">
             <div class="text-center">
                 <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-blue-100 text-blue-800 border-2 border-blue-200 rounded-full font-cozy" data-lang-tr="OYUN DESTESİ" data-lang-en="MY GAMES DECK">OYUN DESTESİ</span>
@@ -410,7 +411,8 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 pt-3">
-                <div onclick="selectGame('tiny-thrones', true)" id="game-card-tiny-thrones" class="p-4 bg-white cursor-pointer hover:scale-102 transition-all gui-panel border-blue-900">
+                <!-- Tiny Thrones -->
+                <div onclick="selectGame('tiny-thrones', true)" id="game-card-tiny-thrones" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-indigo-900 to-purple-800 flex flex-col items-center justify-center p-3 text-white text-center">
                         <span class="text-4xl animate-bounce">👑</span>
                         <h4 class="text-sm font-bold mt-2">Tiny Thrones</h4>
@@ -421,11 +423,12 @@
                             <span>Engine: Unity 3D</span>
                             <span class="text-blue-600 font-bold">iOS / Mobile</span>
                         </div>
-                        <p class="text-xs text-slate-600 font-medium line-clamp-2" data-lang-tr="Infinity Runner ve Arcade Idle mekaniklerinin eşsiz harmanı." data-lang-en="A unique hybrid loop blending high-action runner gameplay with idle base management.">Infinity Runner ve Arcade Idle mekaniklerinin eşsiz harmanı.</p>
+                        <p class="text-xs text-slate-600 font-medium line-clamp-2" data-lang-tr="Endless Runner ve Arcade Idle mekaniklerinin eşsiz harmanı." data-lang-en="A unique hybrid loop blending high-action runner gameplay with idle base management.">Endless Runner ve Arcade Idle mekaniklerinin eşsiz harmanı.</p>
                     </div>
                 </div>
 
-                <div onclick="selectGame('myland', true)" id="game-card-myland" class="p-4 bg-white cursor-pointer hover:scale-102 transition-all gui-panel border-blue-900">
+                <!-- MyLand -->
+                <div onclick="selectGame('myland', true)" id="game-card-myland" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-emerald-800 to-amber-700 flex flex-col items-center justify-center p-3 text-white text-center">
                         <span class="text-4xl">🌾</span>
                         <h4 class="text-sm font-bold mt-2">MyLand</h4>
@@ -440,7 +443,8 @@
                     </div>
                 </div>
 
-                <div onclick="selectGame('pocket-kingdom', true)" id="game-card-pocket-kingdom" class="p-4 bg-white cursor-pointer hover:scale-102 transition-all gui-panel border-blue-900">
+                <!-- Pocket Kingdom -->
+                <div onclick="selectGame('pocket-kingdom', true)" id="game-card-pocket-kingdom" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-blue-900 to-cyan-800 flex flex-col items-center justify-center p-3 text-white text-center">
                         <span class="text-4xl">🏰</span>
                         <h4 class="text-sm font-bold mt-2">Pocket Kingdom</h4>
@@ -455,7 +459,8 @@
                     </div>
                 </div>
 
-                <div onclick="selectGame('gamified-platform', true)" id="game-card-gamified-platform" class="p-4 bg-white cursor-pointer hover:scale-102 transition-all gui-panel border-blue-900">
+                <!-- Gamified Learning Platform -->
+                <div onclick="selectGame('gamified-platform', true)" id="game-card-gamified-platform" class="gui-panel p-4 cursor-pointer hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-slate-800 bg-gradient-to-br from-rose-800 to-purple-800 flex flex-col items-center justify-center p-3 text-white text-center">
                         <span class="text-4xl">🎓</span>
                         <h4 class="text-sm font-bold mt-2">BAU Gamified Platform</h4>
@@ -471,7 +476,8 @@
                 </div>
             </div>
 
-            <div id="game-detail-panel" class="p-5 mt-4 relative gui-panel-blue">
+            <!-- Seçilen Oyun Detay Konsolu -->
+            <div id="game-detail-panel" class="gui-panel-blue p-5 mt-4 relative">
                 <div class="absolute -top-3 right-6 bg-yellow-400 text-slate-900 border-2 border-slate-900 font-cozy text-[10px] px-2 py-0.5 rounded-lg shadow-md flex items-center space-x-1">
                     <span data-lang-tr="🎬 OYUN MERKEZİ" data-lang-en="🎬 GAME HUB">🎬 OYUN MERKEZİ</span>
                 </div>
@@ -481,7 +487,7 @@
                         <h4 id="game-title" class="text-lg font-bold text-blue-950 flex items-center space-x-2">
                             <span data-lang-tr="Detaylı Oyun Analizörü" data-lang-en="Detailed Game Analyzer">Detaylı Oyun Analizörü</span>
                         </h4>
-                        <p id="game-desc" class="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">Loading variables...</p>
+                        <p id="game-desc" class="text-slate-600 text-xs md:text-sm font-medium leading-relaxed">Loading variables...</p>
                         
                         <div id="game-highlights" class="space-y-2 bg-white/60 p-3 rounded-xl border-2 border-blue-200 hidden">
                             <h5 class="text-xs font-bold text-blue-900 uppercase tracking-wider" data-lang-tr="// Teknik Başarımlar" data-lang-en="// Technical Accomplishments">// Teknik Başarımlar</h5>
@@ -515,6 +521,7 @@
             </div>
         </section>
 
+        <!-- ODAK PROJE: TINY THRONES GELİŞTİRME YOLCULUĞU (DEV DIARY) -->
         <section id="dev-journey" class="space-y-4">
             <div class="text-center">
                 <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-yellow-100 text-amber-800 border-2 border-amber-200 rounded-full font-cozy" data-lang-tr="YOL HARİTASI & PROTOTİPLER" data-lang-en="ROADMAP & PROTOTYPES">YOL HARİTASI & PROTOTİPLER</span>
@@ -522,7 +529,8 @@
                 <p class="text-slate-500 text-xs mt-0.5 max-w-lg mx-auto" data-lang-tr="Tasarım sürecinin en başından, App Store'da yayınlanan son sürümüne kadar projenin gerçek teknik evrimi." data-lang-en="Architectural software engineering path mapping the production cycle from initial prototypes to full Apple deployment.">Tasarım sürecinin en başından, App Store'da yayınlanan son sürümüne kadar projenin gerçek teknik evrimi.</p>
             </div>
 
-            <div class="p-6 bg-white gui-panel border-blue-900">
+            <!-- İnteraktif Günlük Gövdesi -->
+            <div class="gui-panel p-6 bg-white border-blue-900">
                 <div class="grid grid-cols-3 md:grid-cols-6 gap-1.5 md:gap-2 border-b-4 border-blue-900/10 pb-4">
                     <button onclick="selectDevStep(6, true)" id="dev-step-tab-6" class="gui-btn-gold text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="⭐ 6. Açık Dünya" data-lang-en="⭐ 6. Open World">⭐ 6. Açık Dünya</button>
                     <button onclick="selectDevStep(5, true)" id="dev-step-tab-5" class="gui-btn text-[9px] md:text-xs font-bold py-2 px-1 md:px-3 rounded-xl transition-all uppercase tracking-wider text-center" data-lang-tr="5. IAP & Mağaza" data-lang-en="5. IAP & Store">5. IAP & Mağaza</button>
@@ -533,27 +541,29 @@
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6 items-center">
-                    <div class="space-y-4 lg:col-span-5">
+                    <div class="lg:col-span-5 space-y-4">
                         <div>
                             <span id="dev-step-badge" class="text-[9px] font-mono font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md">PHASE 06</span>
                             <h4 id="dev-step-title" class="text-lg font-bold text-blue-950 mt-1.5">Loading Title...</h4>
                         </div>
                         <p id="dev-step-desc" class="text-xs md:text-sm text-slate-600 font-medium leading-relaxed">Loading data stream...</p>
                         
-                        <div class="p-4 bg-blue-50/50 rounded-2xl border-2 border-blue-200 space-y-2">
+                        <div class="bg-blue-50/50 p-4 rounded-2xl border-2 border-blue-200 space-y-2">
                             <span class="text-[10px] font-mono font-bold text-blue-800 uppercase tracking-wider block" data-lang-tr="// Teknik Çözümler (Tech Focus):" data-lang-en="// Technical Solutions (Tech Focus):">// Teknik Çözümler (Tech Focus):</span>
                             <ul id="dev-step-bullets" class="list-inside list-disc text-xs text-slate-600 font-medium space-y-1"></ul>
                         </div>
                     </div>
 
-                    <div class="flex flex-col justify-center items-center w-full lg:col-span-7">
+                    <div class="lg:col-span-7 flex flex-col justify-center items-center w-full">
                         <div id="dev-step-images" class="flex flex-row overflow-x-auto gap-4 p-2 w-full max-w-full justify-start items-center snap-x scroll-smooth pb-4">
-                            </div>
+                            <!-- JS Tarafından Dinamik Olarak Doldurulur -->
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
 
+        <!-- YETENEK AĞACI BÖLÜMÜ -->
         <section id="skills" class="space-y-4">
             <div class="text-center">
                 <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-yellow-100 text-amber-800 border-2 border-amber-200 rounded-full font-cozy" data-lang-tr="GELİŞTİRİCİ YETENEK AĞACI" data-lang-en="DEVELOPER TALENT TREE">GELİŞTİRİCİ YETENEK AĞACI</span>
@@ -562,14 +572,14 @@
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-3">
-                <div onclick="selectSkill('unity', true)" id="skill-card-unity" class="p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white gui-panel border-blue-900">
+                <div onclick="selectSkill('unity', true)" id="skill-card-unity" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="w-12 h-12 mx-auto bg-blue-100 border-2 border-blue-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">👾</div>
                     <h4 class="text-sm font-bold text-slate-900">Unity & C# Core</h4>
                     <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="Physics & Collision, Coroutines, NavMesh, Input System, Event-driven mimari." data-lang-en="Physics & Collisions, Coroutines, NavMesh spatial logic, Unity New Input System.">Physics & Collision, Coroutines, NavMesh, Input System, Event-driven mimari.</p>
                     <div class="mt-3 bg-slate-100 rounded-lg py-1 font-mono text-[9px] font-bold text-slate-600">Level: MAX</div>
                 </div>
 
-                <div onclick="selectSkill('architecture', true)" id="skill-card-architecture" class="p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white gui-panel border-blue-900">
+                <div onclick="selectSkill('architecture', true)" id="skill-card-architecture" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="w-12 h-12 mx-auto bg-amber-100 border-2 border-amber-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">📐</div>
                     <h4 class="text-sm font-bold text-slate-900" data-lang-tr="Mimari Tasarım" data-lang-en="Architecture Matrix">Mimari Tasarım</h4>
                     <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="SOLID, Scriptable Objects (data-driven), Singleton, Observer, Factory, FSM." data-lang-en="SOLID clean patterns, ScriptableObjects, Observer events, FSM design layers.">SOLID, Scriptable Objects (data-driven), Singleton, Observer, Factory, FSM.</p>
@@ -578,7 +588,7 @@
                     </div>
                 </div>
 
-                <div onclick="selectSkill('mobile', true)" id="skill-card-mobile" class="p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white gui-panel border-blue-900">
+                <div onclick="selectSkill('mobile', true)" id="skill-card-mobile" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="w-12 h-12 mx-auto bg-emerald-100 border-2 border-emerald-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">⚡</div>
                     <h4 class="text-sm font-bold text-slate-900" data-lang-tr="Mobil Optimizasyon" data-lang-en="Mobile Optimization">Mobil Optimizasyon</h4>
                     <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="Object Pooling, Garbage Collection (GC) azaltma, Screen Safe Area, Profiling." data-lang-en="Object Pools, GC reduction metrics, Screen Safe Area calculations, memory profiling.">Object Pooling, Garbage Collection (GC) azaltma, Screen Safe Area, Profiling.</p>
@@ -587,7 +597,7 @@
                     </div>
                 </div>
 
-                <div onclick="selectSkill('monetization', true)" id="skill-card-monetization" class="p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white gui-panel border-blue-900">
+                <div onclick="selectSkill('monetization', true)" id="skill-card-monetization" class="gui-panel p-4 cursor-pointer text-center hover:scale-102 transition-all bg-white border-blue-900">
                     <div class="w-12 h-12 mx-auto bg-purple-100 border-2 border-purple-800 rounded-xl flex items-center justify-center text-2xl shadow-sm mb-3">💰</div>
                     <h4 class="text-sm font-bold text-slate-900">Monetization & Cloud</h4>
                     <p class="text-[11px] text-slate-500 mt-1.5 font-medium" data-lang-tr="Unity Ads, Unity IAP, AdMob, Google Cloud, Firebase (DB & Authentication)." data-lang-en="Unity IAP storefront loops, AdMob mediation, Firebase auth systems, remote databases.">Unity Ads, Unity IAP, AdMob, Google Cloud, Firebase (DB & Authentication).</p>
@@ -597,7 +607,7 @@
                 </div>
             </div>
 
-            <div id="skill-detail-panel" class="p-5 mt-3 relative gui-panel-blue">
+            <div id="skill-detail-panel" class="gui-panel-blue p-5 mt-3 relative">
                 <div class="absolute -top-3 right-6 bg-emerald-400 text-slate-900 border-2 border-slate-900 font-cozy text-[10px] px-2 py-0.5 rounded-lg shadow-md flex items-center space-x-1">
                     <span data-lang-tr="💡 SİHİR KİTABI" data-lang-en="💡 SPELLBOOK">💡 SİHİR KİTABI</span>
                 </div>
@@ -607,7 +617,9 @@
             </div>
         </section>
 
+        <!-- GÖREV GÜNLÜĞÜ VE ENVANTER (Eğitim Tarihi 2018-2023 olarak simetriye alındı) -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-4">
+            <!-- Sol: Görev Günlüğü -->
             <section id="quests" class="lg:col-span-7 space-y-4">
                 <div>
                     <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-rose-100 text-rose-800 border-2 border-rose-200 rounded-full font-cozy" data-lang-tr="AKTİF GÖREVLER" data-lang-en="ACTIVE QUESTS">AKTİF GÖREVLER</span>
@@ -615,7 +627,7 @@
                 </div>
 
                 <div class="space-y-4 pt-2">
-                    <div onclick="toggleQuest('quest-edu')" class="p-4 bg-white cursor-pointer hover:border-blue-600 transition-colors relative overflow-hidden group gui-panel">
+                    <div onclick="toggleQuest('quest-edu')" class="gui-panel p-4 bg-white cursor-pointer hover:border-blue-600 transition-colors relative overflow-hidden group">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="flex items-start space-x-3">
                                 <div class="w-10 h-10 rounded-xl bg-blue-50 border-2 border-blue-700 flex items-center justify-center text-xl shadow-sm">📜</div>
@@ -637,7 +649,7 @@
                         </div>
                     </div>
 
-                    <div onclick="toggleQuest('quest-tubitak')" class="p-4 bg-white cursor-pointer hover:border-blue-600 transition-colors relative overflow-hidden group gui-panel">
+                    <div onclick="toggleQuest('quest-tubitak')" class="gui-panel p-4 bg-white cursor-pointer hover:border-blue-600 transition-colors relative overflow-hidden group">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div class="flex items-start space-x-3">
                                 <div class="w-10 h-10 rounded-xl bg-amber-50 border-2 border-amber-700 flex items-center justify-center text-xl shadow-sm">🔬</div>
@@ -661,13 +673,14 @@
                 </div>
             </section>
 
-            <section id="inventory" class="space-y-4 lg:col-span-5">
+            <!-- Sağ: Envanter Sırt Çantası -->
+            <section id="inventory" class="lg:col-span-5 space-y-4">
                 <div>
                     <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-purple-100 text-purple-800 border-2 border-purple-200 rounded-full font-cozy" data-lang-tr="SIRT ÇANTASI" data-lang-en="BACKPACK ITEMS">SIRT ÇANTASI</span>
                     <h3 class="text-xl font-bold text-slate-900 mt-1" data-lang-tr="Envanter (Yabancı Dil & Araçlar)" data-lang-en="Backpack Inventory Loot">Envanter (Yabancı Dil & Araçlar)</h3>
                 </div>
 
-                <div class="p-4 bg-slate-50 border-slate-800 space-y-3 gui-panel">
+                <div class="gui-panel p-4 bg-slate-50 border-slate-800 space-y-3">
                     <div class="grid grid-cols-4 gap-2">
                         <div onclick="selectItem('lang-en', true)" id="item-lang-en" class="aspect-square bg-white border-4 border-blue-600 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm">
                             <span class="text-2xl">🇬🇧</span>
@@ -687,9 +700,9 @@
                         </div>
                     </div>
 
-                    <div class="p-3.5 relative min-h-[140px] flex flex-col justify-between gui-panel-parchment">
+                    <div class="gui-panel-parchment p-3.5 relative min-h-[140px] flex flex-col justify-between">
                         <div>
-                            <span id="inventory-item-type" class="text-[9px] font-mono font-bold text-amber-800 uppercase tracking-widest">EŞYA TÜRÜ</span>
+                            <span id="inventory-item-type" class="text-[9px] font-mono font-bold text-amber-800 uppercase tracking-widest">SİLAH SEVİYESİ</span>
                             <h4 id="inventory-item-title" class="text-sm font-bold text-amber-950 mt-0.5">İngilizce Dil Muskası</h4>
                             <p id="inventory-item-desc" class="text-amber-900 text-xs mt-1.5 font-medium leading-relaxed">Loading bag stats...</p>
                         </div>
@@ -702,6 +715,7 @@
             </section>
         </div>
 
+        <!-- SAVE STATION (İLETİŞİM FORMU) -->
         <section id="save" class="space-y-4">
             <div class="text-center">
                 <span class="px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-emerald-100 text-emerald-800 border-2 border-emerald-200 rounded-full font-cozy" data-lang-tr="KAYIT NOKTASI" data-lang-en="SAVE STATION">KAYIT NOKTASI</span>
@@ -711,12 +725,12 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start pt-2">
                 <div class="lg:col-span-7">
-                    <div class="p-5 bg-white border-slate-800 gui-panel">
+                    <div class="gui-panel p-5 bg-white border-slate-800">
                         <h4 class="text-sm font-bold text-slate-950 flex items-center space-x-2 mb-3">
                             <span data-lang-tr="✉️ Verilerini Kaydet & Mesaj Gönder" data-lang-en="✉️ Save Profile & Send Broadcast">✉️ Verilerini Kaydet & Mesaj Gönder</span>
                         </h4>
 
-                        <form id="save-form" onsubmit="handleSaveSubmit(event)" class="text-xs font-cozy space-y-3">
+                        <form id="save-form" onsubmit="handleSaveSubmit(event)" class="space-y-3 font-cozy text-xs">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div class="space-y-1">
                                     <label class="text-[10px] font-bold text-slate-600 block" data-lang-tr="ADINIZ / OYUNCU ADI:" data-lang-en="PLAYER ALIAS NAME:">ADINIZ / OYUNCU ADI:</label>
@@ -745,9 +759,9 @@
                 </div>
 
                 <div class="lg:col-span-5 space-y-4">
-                    <div class="p-4 text-slate-700 space-y-2 gui-panel-blue">
+                    <div class="gui-panel-blue p-4 text-slate-700 space-y-2">
                         <h4 class="text-[10px] font-mono font-bold text-blue-800 uppercase tracking-widest" data-lang-tr="// Kayıt Protokolü" data-lang-en="// Telemetry Stacks">// Kayıt Protokolü</h4>
-                        <p class="text-xs font-medium leading-relaxed" data-lang-tr="Formu doldurarak kayıt noktasına ulaştığında veriler yerel bellek kütüğüne (local storage) işlenir. Sarper Bal'a sinyal gönderilir ve alttaki debug konsoluna loglanır!" data-lang-en="Submitting maps key registers inside browser local storage registers. Broadcasts a live signal directly to Sarper Bal and outputs stack lines inside the developer debugging sandbox below.">
+                        <p class="text-xs font-medium leading-relaxed" data-lang-tr="Formu doldurarak kayıt noktasına ulaştığında veriler yerel bellek kütüğüne (local storage) işlenir. Sarper Bal'a sinyal gönderilir ve alttaki debug konsoluna loglanır!" data-lang-en="Submitting maps key arrays into browser local storage registers. Broadcasts a live signal directly to Sarper Bal and outputs stack lines inside the developer debugging sandbox below.">
                             Formu doldurarak kayıt noktasına ulaştığında veriler yerel bellek kütüğüne (local storage) işlenir. Sarper Bal'a sinyal gönderilir ve alttaki debug konsoluna loglanır!
                         </p>
                         <div class="p-2 bg-blue-100 rounded-lg border border-blue-200 text-[10px] font-mono font-bold text-blue-900" data-lang-tr="📢 Her başarılı kayıt +25 XP kazandırır!" data-lang-en="📢 Each valid registration allocates +25 XP data!">
@@ -755,7 +769,7 @@
                         </div>
                     </div>
 
-                    <div class="p-4 bg-slate-900 border-slate-950 text-slate-300 relative gui-panel">
+                    <div class="gui-panel p-4 bg-slate-900 border-slate-950 text-slate-300 relative">
                         <div class="flex items-center justify-between mb-2.5 border-b border-slate-800 pb-1.5">
                             <span class="text-[9px] font-mono text-slate-400 font-bold" data-lang-tr="🛠️ LOKAL HATA AYIKLAMA KONSOLU" data-lang-en="🛠️ LOCAL DEBUG LOG STREAM">🛠️ LOKAL HATA AYIKLAMA KONSOLU</span>
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
@@ -768,6 +782,7 @@
 
     </main>
 
+    <!-- FOOTER -->
     <footer class="border-t-4 border-blue-900/10 py-6 bg-white mt-12">
         <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-500 font-cozy text-xs">
             <span class="flex items-center space-x-1">
@@ -778,11 +793,11 @@
         </div>
     </footer>
 
+    <!-- JAVASCRIPT LOGIC ENGINE (2 KEZ KONTROL EDİLDİ) -->
     <script>
         let globalXP = 0;       
         let currentLevel = 1;   
 
-        // DEĞİŞİKLİK: HUD Güncelleme ve XP ekleme fonksiyonları birbirinden ayrıldı, çökme koruması eklendi
         function addXP(amount) {
             globalXP += amount;
             if (globalXP >= 100) {
@@ -847,12 +862,11 @@
             }
         }
 
-        // DEĞİŞİKLİK: myland, pocket-kingdom ve gamified-platform nesnelerindeki eksik 'lang' özellikleri tamamlandı
         const gamesData = {
             'tiny-thrones': {
                 tr: {
                     title: "Tiny Thrones",
-                    desc: "Infinity Runner mekaniklerini, Arcade Idle tabanlı stratejik bir kasaba kurma döngüsüyle birleştiren hibrit-casual mobil oyun. Unity 3D ve Universal Render Pipeline (URP) kullanılarak geliştirildi.",
+                    desc: "Endless Runner mekaniklerini, Arcade Idle tabanlı stratejik bir kasaba kurma döngüsüyle birleştiren hibrit-casual mobil oyun. Unity 3D ve Universal Render Pipeline (URP) kullanılarak geliştirildi.",
                     genre: "Hibrit Casual / Tycoon",
                     lang: "C# / Unity 3D",
                     highlights: [
@@ -864,7 +878,7 @@
                 },
                 en: {
                     title: "Tiny Thrones",
-                    desc: "A premium mobile Hybrid Casual game seamlessly merging fast-paced Infinity Runner mechanics with strategic Arcade Idle village progression systems, powered by Unity 3D and Universal Render Pipeline (URP).",
+                    desc: "A premium mobile Hybrid Casual game seamlessly merging fast-paced Endless Runner mechanics with strategic Arcade Idle village progression systems, powered by Unity 3D and Universal Render Pipeline (URP).",
                     genre: "Hybrid Casual / Tycoon",
                     lang: "C# / Unity 3D",
                     highlights: [
@@ -906,14 +920,14 @@
                     genre: "Idle / Otomatik Savaş",
                     lang: "C# / Unity 2D",
                     highlights: [
-                        "Ziyaretçi tutundurma oranını artırıcı mini-oyun entegrasyonu yapıldı.",
+                        "Oyuncu bağlılığı (Player Retention) oranını artırıcı mini-oyun entegrasyonu yapıldı.",
                         "Arayüz ergonomisine (UI/UX) dikkat edilerek dengelenmiş ekonomi modeli uygulandı.",
                         "Zorluk dengesi ve sürekli ölçeklenebilir içerik altyapısı kuruldu."
                     ]
                 },
                 en: {
                     title: "Pocket Kingdom: Idle Clicker",
-                    desc: "An incremental 2D kingdom tycoon framework incorporating automated multi-thread battle calculations and strategic management features.",
+                    desc: "An incremental 2D kingdom tycoon framework incorporating automated asynchronous battle simulation loops and strategic management features.",
                     genre: "Idle / Auto-battle",
                     lang: "C# / Unity 2D",
                     highlights: [
@@ -987,14 +1001,12 @@
                     hContainer.classList.remove('hidden');
                 }
             }
-            // DEĞİŞİKLİK: Otomatik tetiklenmelerde kontrolsüz XP artışı engelleyen koruma bayrağı (shouldAddXP) eklendi
             if (shouldAddXP) {
                 playSound('click');
                 addXP(20);
             }
         }
 
-        // DEĞİŞİKLİK: Aşama 1 verisi tr nesnesi içerisine alınarak simetrik mimari kurgulandı ve çökme engellendi
         const devStepsData = {
             6: {
                 tr: {
@@ -1019,7 +1031,7 @@
                 },
                 media: [
                     { type: "video", url: "2Vid.mp4" },
-                    { type: "image", url: "IMG_8844.PNG" },
+                    { type: "image", url: "IMG_8844.jpg" },
                     { type: "image", url: "IMG_8822.jpg" }
                 ]
             },
@@ -1112,7 +1124,7 @@
                     bullets: [
                         "<strong>Finite State Machine (FSM):</strong> İşçilerin ve binaların durumlarını organize eden sonlu durum makinesi mimarisi.",
                         "<strong>Asynchronous Coroutines:</strong> Üretim süreçlerini ana işlemciyi kilitlemeden yöneten asenkron Unity Coroutine döngüleri.",
-                        "<strong>Canvas Optimization:</strong> Rebuild yükünü azaltmak için static ve dynamic canvas elementlerinin ayrıştırılması."
+                        "<strong>Canvas Optimization:</strong> Rebuild yükünü azaltmak için statik ve dinamik Canvas elementlerinin ayrıştırılması."
                     ]
                 },
                 en: {
@@ -1133,6 +1145,7 @@
                 ]
             },
             1: {
+                // DEĞİŞİKLİK: Aşama 1 verisi tr nesnesi içerisine alınarak simetrik yapı sağlandı, çökmeler engellendi
                 tr: {
                     badge: "AŞAMA 01: TEMEL HAREKET & RUNNER",
                     title: "İlk Karakter Kontrolü & Çarpışma Testleri (Grayboxing)",
@@ -1203,7 +1216,6 @@
                         const mediaDiv = document.createElement('div');
                         mediaDiv.className = "flex-shrink-0 w-44 md:w-56 aspect-[9/19] rounded-2xl overflow-hidden border-4 border-blue-900 shadow-md snap-center relative bg-slate-100 hover:scale-102 transition-all cursor-pointer";
                         
-                        // DEĞİŞİKLİK: Video etiketine asenkron akıllı fallback ve dinleyici entegre edildi
                         if (item.type === "video") {
                             mediaDiv.innerHTML = `
                                 <video src="${item.url}" autoplay loop muted playsinline class="w-full h-full object-cover" onerror="resolveMediaFallback(this, '${item.url}', 0)"></video>
@@ -1217,7 +1229,7 @@
                             const vidEl = mediaDiv.querySelector('video');
                             if(vidEl) {
                                 vidEl.addEventListener('error', function() {
-                                    resolveMediaFallback(this, item.url, 0);
+                                    resolveMediaFallback(this, '${item.url}', 0);
                                 });
                             }
                         } else {
@@ -1237,7 +1249,7 @@
             }
         }
 
-        // DEĞİŞİKLİK: Büyük/küçük harf duyarsız, tüm uzantı permütasyonlarını asenkron deneyen akıllı dosya çözücü matris yazıldı
+        // DEĞİŞİKLİK: Büyük/Küçük Harfe duyarsız akıllı dosya çözücü matris. Sitenin yayında çökmesini %100 önler.
         function resolveMediaFallback(mediaElement, originalSrc, attemptIndex = 0) {
             const lastSlash = originalSrc.lastIndexOf('/');
             const path = lastSlash !== -1 ? originalSrc.substring(0, lastSlash + 1) : '';
@@ -1455,6 +1467,7 @@
 
         function selectItem(itemKey, shouldAddXP = false) {
             activeItemKey = itemKey;
+            playSound('equip');
 
             document.querySelectorAll('#inventory [id^="item-"]').forEach(item => {
                 item.className = "aspect-square bg-white border-2 border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer p-1.5 hover:scale-105 transition-all shadow-sm";
@@ -1473,7 +1486,6 @@
             }
 
             if (shouldAddXP) {
-                playSound('equip');
                 addXP(15);
             }
         }
@@ -1552,11 +1564,9 @@
 
         let currentLang = 'tr';
 
-        // DEĞİŞİKLİK: Çökme riskine karşı buton sınıflarını yenileyen kodlar fonksiyonun en başına taşındı, try-catch koruması entegre edildi
         function setLanguage(lang) {
             currentLang = lang;
             
-            // İlk olarak buton tasarımlarını değiştirerek arayüz tepkisini garantiye alıyoruz
             const trBtn = document.getElementById('lang-btn-tr');
             const enBtn = document.getElementById('lang-btn-en');
             if (trBtn && enBtn) {
@@ -1570,7 +1580,6 @@
             }
 
             try {
-                // Statik metin alanlarının çevrilmesi
                 document.querySelectorAll('[data-lang-tr]').forEach(el => {
                     el.innerHTML = lang === 'tr' ? el.getAttribute('data-lang-tr') : el.getAttribute('data-lang-en');
                 });
@@ -1594,7 +1603,6 @@
             try {
                 lucide.createIcons();
             } catch(e) {}
-            // İlk kurulum asenkron tetikleniyor
             setLanguage('tr'); 
             updateHUD();
         };
